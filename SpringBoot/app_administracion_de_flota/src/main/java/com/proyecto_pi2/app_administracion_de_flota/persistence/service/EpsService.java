@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional; // Necesario para findById
 
 @Service
 public class EpsService {
@@ -22,6 +23,11 @@ public class EpsService {
 
     public EpsEntity getByRuc(String ruc) {
         return this.epsRepository.findByRuc(ruc);
+    }
+
+    // Nuevo método para obtener EPS por ID
+    public Optional<EpsEntity> getById(Integer id) {
+        return this.epsRepository.findById(id);
     }
 
     public EpsEntity save(EpsEntity eps) {

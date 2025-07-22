@@ -5,7 +5,8 @@ const AuthContext = createContext(null);
 
 // Proveedor del contexto de autenticación
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null); // Almacena el objeto de usuario (username, roles, etc.)
+  // Almacena el objeto de usuario (username, roles, fullName, idEps, etc.)
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true); // Para saber si ya se cargó el estado inicial
 
   // Carga el usuario desde localStorage al inicio
@@ -13,7 +14,8 @@ export const AuthProvider = ({ children }) => {
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
       try {
-        setUser(JSON.parse(storedUser));
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
       } catch (error) {
         console.error("Error al parsear el usuario de localStorage:", error);
         localStorage.removeItem('user'); // Limpiar si está corrupto
@@ -45,7 +47,7 @@ export const AuthProvider = ({ children }) => {
     return user.roles.includes(formattedRequiredRole);
   };
 
-  // Puedes añadir una función para verificar si está autenticado
+  // Función para verificar si está autenticado
   const isAuthenticated = () => {
     return !!user;
   };

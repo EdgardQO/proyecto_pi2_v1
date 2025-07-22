@@ -43,8 +43,8 @@ public class UserLoginService implements UserDetailsService {
         if (adminCentral != null) {
             String role = adminCentral.getRolSistema().getNombreRol();
             return User.builder()
-                    // CAMBIO AQUÍ: Usar nombres y apellidos
-                    .username(adminCentral.getNombres() + " " + adminCentral.getApellidos())
+                    // Usar el correo o DNI como el username principal para coherencia con el login
+                    .username(adminCentral.getCorreo() != null ? adminCentral.getCorreo() : adminCentral.getDni())
                     .password(adminCentral.getContrasena())
                     .roles(role)
                     .accountLocked("INACTIVO".equalsIgnoreCase(adminCentral.getEstado()))
@@ -61,8 +61,8 @@ public class UserLoginService implements UserDetailsService {
         if (adminEps != null) {
             String role = adminEps.getRolSistema().getNombreRol();
             return User.builder()
-                    // CAMBIO AQUÍ: Usar nombres y apellidos
-                    .username(adminEps.getNombres() + " " + adminEps.getApellidos())
+                    // Usar el correo o DNI como el username principal
+                    .username(adminEps.getCorreo() != null ? adminEps.getCorreo() : adminEps.getDni())
                     .password(adminEps.getContrasena())
                     .roles(role)
                     .accountLocked("INACTIVO".equalsIgnoreCase(adminEps.getEstado()))
@@ -78,8 +78,8 @@ public class UserLoginService implements UserDetailsService {
             roles.add(role);
 
             return User.builder()
-                    // CAMBIO AQUÍ: Usar nombres y apellidos
-                    .username(usuarioPorEps.getNombres() + " " + usuarioPorEps.getApellidos())
+                    // Usar el DNI como el username principal
+                    .username(usuarioPorEps.getDni())
                     .password(usuarioPorEps.getContrasena())
                     .roles(roles.toArray(new String[0]))
                     .accountLocked("INACTIVO".equalsIgnoreCase(usuarioPorEps.getEstado()))
@@ -88,5 +88,26 @@ public class UserLoginService implements UserDetailsService {
         }
 
         throw new UsernameNotFoundException("Usuario " + username + " no encontrado");
+    }
+
+    // Métodos auxiliares para obtener la entidad completa después de la autenticación
+    public AdministradorCentralEntity getAdminCentralByUsername(String username) {
+        AdministradorCentralEntity adminCentral = adminCentralRepository.findByCorreo(username);
+        if (adminCentral == null) {
+            adminCentral = adminCentralRepository.findByDni(username);
+        }
+        return adminCentral;
+    }
+
+    public AdminEpsEntity getAdminEpsByUsername(String username) {
+        AdminEpsEntity adminEps = adminEpsRepository.findByCorreo(username);
+        if (adminEps == null) {
+            adminEps = adminEpsRepository.findByDni(username);
+        }
+        return adminEps;
+    }
+
+    public UsuarioPorEpsEntity getUsuarioPorEpsByUsername(String username) {
+        return usuarioPorEpsRepository.findByDni(username);
     }
 }

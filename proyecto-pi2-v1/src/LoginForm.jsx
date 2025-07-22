@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Importa useNavigate
-import { useAuth } from './AuthContext'; // Importa useAuth
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from './AuthContext';
 
 function LoginForm() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
   const [isError, setIsError] = useState(false);
-  const navigate = useNavigate(); // Hook para la navegación programática
-  const { login } = useAuth(); // Obtiene la función login del contexto
+  const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -25,10 +25,10 @@ function LoginForm() {
       });
 
       if (response.ok) {
-        const userData = await response.json(); // Espera un JSON con username y roles
-        setMessage(`¡Login exitoso! Bienvenido ${userData.username}`);
+        const userData = await response.json(); // Espera un JSON con username, fullName, roles, idEps (si aplica)
+        setMessage(`¡Login exitoso! Bienvenido ${userData.fullName || userData.username}`);
         setIsError(false);
-        login(userData); // Almacena los datos del usuario en el contexto
+        login(userData); // Almacena todos los datos del usuario en el contexto
         
         // Redirige según el rol obtenido
         if (userData.roles.includes('ROLE_ADMIN_CENTRAL')) {
@@ -66,6 +66,8 @@ function LoginForm() {
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
+            // Nota: Para usuarios de tipo USUARIO_EPS, el 'username' debe ser el DNI.
+            // Para administradores, puede ser correo o DNI.
           />
         </div>
         <div className="form-group">
