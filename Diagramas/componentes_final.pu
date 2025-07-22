@@ -1,0 +1,122 @@
+@startuml
+!theme mars
+left to right direction
+
+skinparam BackgroundColor F9F9F9
+skinparam shadowing false
+skinparam RoundCorner 7
+skinparam ArrowColor 191919
+
+' === INTERFACES DE USUARIO ===
+component "Portal Web EPS\n(Cliente)" as PortalWebEPS
+component "Portal Admin EPS\n(Cliente)" as PortalAdminEPS
+component "Portal Admin Central\n(Cliente)" as PortalAdminCentral
+
+' === API GATEWAY ===
+component "API Gateway" as APIGateway {
+  port "8080"
+}
+
+' === MICROSERVICIOS PRINCIPALES ===
+
+component "Servicio de Autenticación y Usuarios" as AuthService {
+  interface "Autenticar Usuario"
+  interface "Autorizar Acceso"
+  interface "Gestionar Roles y Usuarios"
+}
+
+component "Servicio de Empresas EPS" as EpsService {
+  interface "Gestión EPS"
+}
+
+component "Servicio de Vehículos" as VehiculoService {
+  interface "Gestión Vehículos"
+  interface "Consulta Vehículos"
+}
+
+component "Servicio de Movimiento Vehicular" as MovimientoService {
+  interface "Gestión Asignaciones"
+  interface "Registrar Salida/Retorno"
+  interface "Gestión Abastecimiento"
+  interface "Consultar Movimiento"
+}
+
+component "Servicio de Mantenimiento" as MantenimientoService {
+  interface "Crear Orden"
+  interface "Consultar Estado"
+}
+
+component "Servicio de Talleres" as TallerService {
+  interface "Registrar Ejecución"
+}
+
+component "Servicio de Materiales" as MaterialService {
+  interface "Usar Material"
+  interface "Consultar Stock"
+}
+
+component "Servicio de Mano de Obra" as ManoObraService {
+  interface "Registrar Horas"
+}
+
+component "Servicio de Costos Operacionales" as CostosService {
+  interface "Costos Mantenimiento"
+  interface "Costos Abastecimiento"
+  interface "Costo Promedio por Km"
+}
+
+component "Servicio de Reportes e Indicadores" as ReporteService {
+  interface "Generar Reporte de Costos Operacionales"
+}
+
+' === BASES DE DATOS ===
+database "DB Usuarios" as DB_Usuarios
+database "DB EPS" as DB_EPS
+database "DB Vehículos" as DB_Vehiculos
+database "DB Movimiento" as DB_Movimiento
+database "DB Mantenimiento" as DB_Mantenimiento
+database "DB Materiales" as DB_Materiales
+database "DB Costos" as DB_Costos
+database "DB Reportes" as DB_Reportes
+
+' === CONEXIONES CLIENTE - GATEWAY ===
+PortalWebEPS --> APIGateway
+PortalAdminEPS --> APIGateway
+PortalAdminCentral --> APIGateway
+
+' === CONEXIONES GATEWAY - MICROSERVICIOS ===
+APIGateway --> AuthService
+APIGateway --> EpsService
+APIGateway --> VehiculoService
+APIGateway --> MovimientoService
+APIGateway --> MantenimientoService
+APIGateway --> TallerService
+APIGateway --> MaterialService
+APIGateway --> ManoObraService
+APIGateway --> CostosService
+APIGateway --> ReporteService
+
+' === DEPENDENCIAS ENTRE MICROSERVICIOS ===
+MovimientoService ..> VehiculoService : <<usa>> Consulta Vehículo
+CostosService ..> MovimientoService : <<usa>> Datos de uso
+CostosService ..> MantenimientoService : <<usa>> Gastos
+CostosService ..> VehiculoService : <<usa>> Datos Flota
+ReporteService ..> CostosService : <<usa>> Datos Consolidados
+ManoObraService ..> MantenimientoService : <<relaciona>> Orden
+ManoObraService ..> AuthService : <<consulta>> Técnico EPS
+TallerService ..> MantenimientoService : <<usa>> Orden existente
+MaterialService ..> MantenimientoService : <<consulta>> Orden
+
+' === CONEXIONES A BASE DE DATOS ===
+AuthService --> DB_Usuarios : SQL
+EpsService --> DB_EPS : SQL
+VehiculoService --> DB_Vehiculos : SQL
+MovimientoService --> DB_Movimiento : SQL
+MantenimientoService --> DB_Mantenimiento : SQL
+TallerService --> DB_Mantenimiento : SQL
+MaterialService --> DB_Materiales : SQL
+ManoObraService --> DB_Usuarios : SQL
+CostosService --> DB_Costos : SQL
+ReporteService --> DB_Reportes : SQL
+
+@enduml

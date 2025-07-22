@@ -1,0 +1,105 @@
+@startuml
+!theme mars
+
+left to right direction
+
+' Clientes / Interfaces de Usuario
+component "Terminal TPV\n(Cliente)" as TPV_UI
+component "Administración Web\n(Cliente)" as Admin_UI
+
+' API Gateway
+component "API Gateway" as APIGateway {
+  port "8080" as API_PORT
+}
+
+' Microservicios
+component "Servicio de Productos" as ProductService {
+  interface "Gestion Productos" as Prod_Provided
+  interface "Consulta Productos" as Prod_Required
+}
+component "Servicio de Ventas" as SalesService {
+  interface "Procesar Venta" as Sales_Provided
+  interface "Historial Ventas" as Sales_Required
+}
+component "Servicio de Pagos" as PaymentService {
+  interface "Procesar Pago" as Pay_Provided
+  interface "Validar Tarjeta" as Pay_Required
+}
+component "Servicio de Inventario" as InventoryService {
+  interface "Actualizar Stock" as Inv_Provided
+  interface "Consultar Stock" as Inv_Required
+}
+component "Servicio de Clientes" as CustomerService {
+  interface "Gestión Clientes" as Cust_Provided
+  interface "Buscar Cliente" as Cust_Required
+}
+component "Servicio de Usuarios y Autenticación" as AuthService {
+  interface "Autenticar Usuario" as Auth_Provided
+  interface "Autorizar Acceso" as Auth_Required
+}
+component "Servicio de Reportes" as ReportService {
+  interface "Generar Reporte" as Rep_Provided
+  interface "Obtener Datos" as Rep_Required
+}
+
+' Bases de Datos (ejemplos)
+database "DB Productos" as ProductDB
+database "DB Ventas" as SalesDB
+database "DB Clientes" as CustomerDB
+database "DB Inventario" as InventoryDB
+database "DB Usuarios" as UserDB
+
+' Sistemas Externos
+component "Pasarela de Pagos Externa" as ExternalPaymentGateway
+component "Proveedor de Datos de Inventario\n(Opcional)" as ExternalInventoryProvider
+
+' Conexiones y Dependencias
+
+' Interfaces de Usuario a API Gateway
+TPV_UI -- APIGateway
+Admin_UI -- APIGateway
+
+' API Gateway a Microservicios (usando puertos implícitos o directos)
+APIGateway -down-> ProductService
+APIGateway -down-> SalesService
+APIGateway -down-> PaymentService
+APIGateway -down-> InventoryService
+APIGateway -down-> CustomerService
+APIGateway -down-> AuthService
+APIGateway -down-> ReportService
+
+' Interacciones entre Microservicios (usando relaciones de dependencia o interfaces)
+SalesService -[hidden]-> ProductService
+SalesService ..> ProductService : <<uses>> Consulta stock/precios
+
+SalesService -[hidden]-> InventoryService
+SalesService ..> InventoryService : <<uses>> Reduce stock
+
+SalesService -[hidden]-> PaymentService
+SalesService ..> PaymentService : <<uses>> Inicia transacción
+
+SalesService -[hidden]-> CustomerService
+SalesService ..> CustomerService : <<uses>> Asocia venta a cliente
+
+PaymentService --> ExternalPaymentGateway : <<invokes>> Procesa pago externo
+
+InventoryService -[hidden]-> ExternalInventoryProvider
+InventoryService ..> ExternalInventoryProvider : <<uses>> Sincroniza (Opcional)
+
+ReportService -[hidden]-> SalesService
+ReportService ..> SalesService : <<uses>> Consulta ventas
+
+ReportService -[hidden]-> ProductService
+ReportService ..> ProductService : <<uses>> Consulta productos
+
+ReportService -[hidden]-> CustomerService
+ReportService ..> CustomerService : <<uses>> Consulta clientes
+
+' Microservicios a Bases de Datos
+ProductService --> ProductDB
+SalesService --> SalesDB
+CustomerService --> CustomerDB
+InventoryService --> InventoryDB
+AuthService --> UserDB
+
+@enduml

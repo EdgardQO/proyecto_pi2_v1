@@ -1,0 +1,94 @@
+@startuml
+!theme mars
+
+' Dirección del flujo para una mejor visualización
+left to right direction
+
+' Nodos principales del sistema de despliegue
+node "TPV Local Device 1" as TPV_DEV_1 <<Device>> {
+  artifact "tpv-client-app.exe" as TPV_APP_1
+}
+
+node "TPV Local Device 2" as TPV_DEV_2 <<Device>> {
+  artifact "tpv-client-app.exe" as TPV_APP_2
+}
+
+node "Cloud Infrastructure" as Cloud {
+  node "API Gateway Server" as APIGW_SERVER <<Virtual Machine>> {
+    artifact "api-gateway.jar" as APIGW_APP
+  }
+
+  node "Microservices Cluster" as MS_CLUSTER <<Kubernetes>> {
+    node "Product Service Node" as PROD_SVC_NODE <<Pod>> {
+      artifact "product-service.jar" as PROD_SVC
+    }
+    node "Sales Service Node" as SALES_SVC_NODE <<Pod>> {
+      artifact "sales-service.jar" as SALES_SVC
+    }
+    node "Payment Service Node" as PAY_SVC_NODE <<Pod>> {
+      artifact "payment-service.jar" as PAY_SVC
+    }
+    node "Inventory Service Node" as INV_SVC_NODE <<Pod>> {
+      artifact "inventory-service.jar" as INV_SVC
+    }
+    node "Customer Service Node" as CUST_SVC_NODE <<Pod>> {
+      artifact "customer-service.jar" as CUST_SVC
+    }
+    node "Auth Service Node" as AUTH_SVC_NODE <<Pod>> {
+      artifact "auth-service.jar" as AUTH_SVC
+    }
+    node "Report Service Node" as REPORT_SVC_NODE <<Pod>> {
+      artifact "report-service.jar" as REPORT_SVC
+    }
+  }
+
+  node "Database Servers" as DB_SERVERS <<Database Cluster>> {
+    database "Product DB" as PROD_DB <<PostgreSQL>>
+    database "Sales DB" as SALES_DB <<PostgreSQL>>
+    database "Customer DB" as CUST_DB <<PostgreSQL>>
+    database "Inventory DB" as INV_DB <<PostgreSQL>>
+    database "User DB" as USER_DB <<PostgreSQL>>
+  }
+}
+
+' Sistemas Externos
+node "External Payment Gateway" as EXT_PAY_GW <<External System>> {
+  component "API Externa" as EXT_PAY_API
+}
+
+node "External Inventory Provider" as EXT_INV_PROV <<External System>> {
+  component "Data Sync API" as EXT_INV_API
+}
+
+' Relaciones de Despliegue y Comunicación
+TPV_APP_1 -- APIGW_APP : HTTP/S
+TPV_APP_2 -- APIGW_APP : HTTP/S
+
+APIGW_APP --> PROD_SVC : REST/HTTP
+APIGW_APP --> SALES_SVC : REST/HTTP
+APIGW_APP --> PAY_SVC : REST/HTTP
+APIGW_APP --> INV_SVC : REST/HTTP
+APIGW_APP --> CUST_SVC : REST/HTTP
+APIGW_APP --> AUTH_SVC : REST/HTTP
+APIGW_APP --> REPORT_SVC : REST/HTTP
+
+SALES_SVC --> PROD_SVC : REST/HTTP
+SALES_SVC --> INV_SVC : REST/HTTP
+SALES_SVC --> PAY_SVC : REST/HTTP
+SALES_SVC --> CUST_SVC : REST/HTTP
+
+PAY_SVC --> EXT_PAY_API : HTTPS
+
+INV_SVC --> EXT_INV_API : (Optional)
+
+REPORT_SVC --> SALES_SVC : REST/HTTP
+REPORT_SVC --> PROD_SVC : REST/HTTP
+REPORT_SVC --> CUST_SVC : REST/HTTP
+
+PROD_SVC --> PROD_DB : SQL
+SALES_SVC --> SALES_DB : SQL
+CUST_SVC --> CUST_DB : SQL
+INV_SVC --> INV_DB : SQL
+AUTH_SVC --> USER_DB : SQL
+
+@enduml

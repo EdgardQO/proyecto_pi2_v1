@@ -1,0 +1,96 @@
+@startuml
+!theme mars
+
+left to right direction
+
+' Interfaces de Usuario
+component "Interfaz Web Encargado\nde Garaje" as EncargadoUI
+component "Interfaz Web Chofer" as ChoferUI
+component "Interfaz Web Administracion\ny Reportes" as AdminUI
+
+' API Gateway
+component "API Gateway" as APIGateway {
+  port "8080" as API_PORT
+}
+
+' Microservicios / Servicios Logicos
+component "Servicio de Autenticacion\ny Usuarios" as AuthService {
+  interface "Autenticar Usuario" as AuthProvided
+  interface "Gestionar Usuarios" as AuthUserProvided
+}
+component "Servicio de Vehiculos\ny Catalogos" as VehicleService {
+  interface "Gestionar Vehiculos" as VehicleProvided
+  interface "Consultar Vehiculos" as VehicleConsultProvided
+  interface "Gestionar Categorias" as CategoryProvided
+}
+component "Servicio de Movimientos\ny Asignaciones" as MovementService {
+  interface "Registrar Salida/Retorno" as MovementProvided
+  interface "Gestionar Asignaciones" as AssignmentProvided
+  interface "Consultar Movimientos" as MovementConsultProvided
+}
+component "Servicio de Abastecimiento\ny Combustibles" as FuelService {
+  interface "Registrar Abastecimiento" as FuelProvided
+  interface "Gestionar Servicentros" as ServicenterProvided
+  interface "Consultar Abastecimientos" as FuelConsultProvided
+}
+component "Servicio de Mantenimiento\ny Costos" as MaintenanceCostService {
+  interface "Registrar Mantenimiento" as MaintProvided
+  interface "Calcular Costos Op." as CostProvided
+  interface "Gestionar Partes" as PartsProvided
+}
+component "Servicio de Reportes\ne Indicadores" as ReportService {
+  interface "Generar Reporte" as RepProvided
+  interface "Obtener Datos" as RepRequired
+}
+
+' Bases de Datos
+database "DB Usuarios" as UserDB
+database "DB Flota" as FleetDB
+database "DB Movimientos" as MovementDB
+database "DB Abastecimientos" as FuelDB
+database "DB Mantenimiento" as MaintDB
+
+' Conexiones y Dependencias
+
+' Interfaces de Usuario a API Gateway
+EncargadoUI -- APIGateway
+ChoferUI -- APIGateway
+AdminUI -- APIGateway
+
+' API Gateway a Microservicios
+APIGateway -down-> AuthService
+APIGateway -down-> VehicleService
+APIGateway -down-> MovementService
+APIGateway -down-> FuelService
+APIGateway -down-> MaintenanceCostService
+APIGateway -down-> ReportService
+
+' Interacciones entre Microservicios (dependencias logicas y uso de interfaces)
+
+' MovementService necesita datos de vehiculos y usuarios
+MovementService ..> VehicleService : <<usa>> Consulta Vehiculos
+MovementService ..> AuthService : <<usa>> Consulta Choferes/Encargados
+
+' FuelService necesita datos de movimientos y vehiculos
+FuelService ..> MovementService : <<usa>> Consulta Movimiento Diario
+FuelService ..> VehicleService : <<usa>> Consulta Vehiculos
+
+' MaintenanceCostService necesita datos de vehiculos y mantenimiento
+MaintenanceCostService ..> VehicleService : <<usa>> Consulta Vehiculos
+MaintenanceCostService ..> MovementService : <<usa>> Obtener Kilometraje/Horas
+MaintenanceCostService ..> FuelService : <<usa>> Obtener Abastecimientos
+
+' ReportService consulta todos los servicios relevantes para generar informes
+ReportService ..> MovementService : <<usa>> Obtener Movimientos
+ReportService ..> FuelService : <<usa>> Obtener Abastecimientos
+ReportService ..> MaintenanceCostService : <<usa>> Obtener Costos/Mantenimientos
+ReportService ..> VehicleService : <<usa>> Obtener Datos Vehiculos
+
+' Microservicios a Bases de Datos
+AuthService --> UserDB
+VehicleService --> FleetDB
+MovementService --> MovementDB
+FuelService --> FuelDB
+MaintenanceCostService --> MaintDB
+
+@enduml

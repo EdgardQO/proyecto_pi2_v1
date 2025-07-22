@@ -1,0 +1,113 @@
+@startuml
+!theme mars
+
+' Direccion del flujo para una mejor visualizacion
+left to right direction
+
+' Nodos principales del sistema de despliegue
+
+node "Dispositivo Web Encargado" as Encargado_DEV <<Dispositivo Cliente>> {
+  artifact "Aplicacion Web\n(Navegador)" as Encargado_APP
+}
+
+node "Dispositivo Web Chofer" as Chofer_DEV <<Dispositivo Cliente>> {
+  artifact "Aplicacion Web\n(Navegador/Movil)" as Chofer_APP
+}
+
+node "Dispositivo Web Administrador" as Admin_DEV <<Dispositivo Cliente>> {
+  artifact "Aplicacion Web\n(Navegador)" as Admin_APP
+}
+
+node "Infraestructura Cloud" as Cloud {
+
+  node "Servidor API Gateway" as APIGW_SERVER <<Maquina Virtual>> {
+    artifact "api-gateway.jar" as APIGW_APP
+  }
+
+  node "Cluster de Microservicios" as MS_CLUSTER <<Kubernetes/Docker Swarm>> {
+    node "Nodo Servicio Autenticacion" as AUTH_SVC_NODE <<Pod/Instancia>> {
+      artifact "auth-service.jar" as AUTH_SVC_APP
+    }
+    node "Nodo Servicio Vehiculos" as VEHICLE_SVC_NODE <<Pod/Instancia>> {
+      artifact "vehicle-service.jar" as VEHICLE_SVC_APP
+    }
+    node "Nodo Servicio Movimientos" as MOVEMENT_SVC_NODE <<Pod/Instancia>> {
+      artifact "movement-service.jar" as MOVEMENT_SVC_APP
+    }
+    node "Nodo Servicio Abastecimiento" as FUEL_SVC_NODE <<Pod/Instancia>> {
+      artifact "fuel-service.jar" as FUEL_SVC_APP
+    }
+    node "Nodo Servicio Mantenimiento\ny Costos" as MAINTCOST_SVC_NODE <<Pod/Instancia>> {
+      artifact "maintcost-service.jar" as MAINTCOST_SVC_APP
+    }
+    node "Nodo Servicio Reportes" as REPORT_SVC_NODE <<Pod/Instancia>> {
+      artifact "report-service.jar" as REPORT_SVC_APP
+    }
+  }
+
+  node "Cluster de Bases de Datos" as DB_CLUSTER <<Cluster de BD>> {
+    database "DB Usuarios" as UserDB <<PostgreSQL>>
+    database "DB Flota" as FleetDB <<PostgreSQL>>
+    database "DB Movimientos" as MovementDB <<PostgreSQL>>
+    database "DB Abastecimientos" as FuelDB <<PostgreSQL>>
+    database "DB Mantenimiento" as MaintDB <<PostgreSQL>>
+  }
+
+  node "Cluster de Mensajeria" as KAFKA_CLUSTER <<Apache Kafka>> {
+    component "Broker Kafka 1" as KafkaBroker1
+    component "Broker Kafka 2" as KafkaBroker2
+    component "Broker Kafka N" as KafkaBrokerN
+  }
+}
+
+' Sistemas Externos (si aplica, como un servicio de GPS externo o de pago)
+node "Servicio GPS Externo" as ExternalGPS <<Sistema Externo>> {
+  component "API GPS" as GPS_API
+}
+
+' Relaciones de Despliegue y Comunicacion
+
+' Clientes a API Gateway
+Encargado_APP -- APIGW_APP : HTTP/S (REST)
+Chofer_APP -- APIGW_APP : HTTP/S (REST)
+Admin_APP -- APIGW_APP : HTTP/S (REST)
+
+' API Gateway a Microservicios
+APIGW_APP --> AUTH_SVC_APP : HTTP/S (REST)
+APIGW_APP --> VEHICLE_SVC_APP : HTTP/S (REST)
+APIGW_APP --> MOVEMENT_SVC_APP : HTTP/S (REST)
+APIGW_APP --> FUEL_SVC_APP : HTTP/S (REST)
+APIGW_APP --> MAINTCOST_SVC_APP : HTTP/S (REST)
+APIGW_APP --> REPORT_SVC_APP : HTTP/S (REST)
+
+' Microservicios a Bases de Datos (SQL)
+AUTH_SVC_APP --> UserDB : JDBC/SQL
+VEHICLE_SVC_APP --> FleetDB : JDBC/SQL
+MOVEMENT_SVC_APP --> MovementDB : JDBC/SQL
+FUEL_SVC_APP --> FuelDB : JDBC/SQL
+MAINTCOST_SVC_APP --> MaintDB : JDBC/SQL
+
+' Microservicios a Kafka (Mensajeria Asincrona)
+MOVEMENT_SVC_APP --> KafkaBroker1 : Publica Eventos (Ej. SalidaRegistrada)
+FUEL_SVC_APP --> KafkaBroker1 : Publica Eventos (Ej. AbastecimientoRegistrado)
+MAINTCOST_SVC_APP --> KafkaBroker1 : Publica Eventos (Ej. MantenimientoRegistrado)
+
+' Otros Microservicios consumen eventos de Kafka
+REPORT_SVC_APP <-- KafkaBroker1 : Consume Eventos
+MAINTCOST_SVC_APP <-- KafkaBroker1 : Consume Eventos (Ej. para calculos de costos)
+
+' Interacciones entre Microservicios (REST/HTTP para consultas sincrónicas)
+MOVEMENT_SVC_APP --> VEHICLE_SVC_APP : HTTP/S (Consulta Vehiculo)
+MOVEMENT_SVC_APP --> AUTH_SVC_APP : HTTP/S (Consulta Chofer/Encargado)
+
+FUEL_SVC_APP --> VEHICLE_SVC_APP : HTTP/S (Consulta Vehiculo)
+FUEL_SVC_APP --> MOVEMENT_SVC_APP : HTTP/S (Consulta Movimiento)
+
+MAINTCOST_SVC_APP --> VEHICLE_SVC_APP : HTTP/S (Consulta Vehiculo)
+MAINTCOST_SVC_APP --> MOVEMENT_SVC_APP : HTTP/S (Obtener Kilometraje/Horas)
+MAINTCOST_SVC_APP --> FUEL_SVC_APP : HTTP/S (Obtener Abastecimientos)
+
+' Integracion con sistemas externos
+MOVEMENT_SVC_APP --> GPS_API : HTTP/S (Actualiza/Consulta Posicion)
+
+@enduml
