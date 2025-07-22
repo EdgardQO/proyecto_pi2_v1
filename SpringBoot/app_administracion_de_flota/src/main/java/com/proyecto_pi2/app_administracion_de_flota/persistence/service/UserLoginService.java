@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserLoginService implements UserDetailsService {
@@ -34,6 +35,8 @@ public class UserLoginService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        System.out.println("--- Intentando autenticar usuario: " + username + " ---");
+
         // 1. Intentar cargar como Administrador Central (prioridad por correo, luego por DNI)
         AdministradorCentralEntity adminCentral = adminCentralRepository.findByCorreo(username);
         if (adminCentral == null) {
@@ -42,8 +45,8 @@ public class UserLoginService implements UserDetailsService {
 
         if (adminCentral != null) {
             String role = adminCentral.getRolSistema().getNombreRol();
+            System.out.println("DEBUG LOGIN: Encontrado como Administrador Central. Rol: " + role);
             return User.builder()
-                    // Usar el correo o DNI como el username principal para coherencia con el login
                     .username(adminCentral.getCorreo() != null ? adminCentral.getCorreo() : adminCentral.getDni())
                     .password(adminCentral.getContrasena())
                     .roles(role)
@@ -60,8 +63,8 @@ public class UserLoginService implements UserDetailsService {
 
         if (adminEps != null) {
             String role = adminEps.getRolSistema().getNombreRol();
+            System.out.println("DEBUG LOGIN: Encontrado como Administrador de EPS. Rol: " + role);
             return User.builder()
-                    // Usar el correo o DNI como el username principal
                     .username(adminEps.getCorreo() != null ? adminEps.getCorreo() : adminEps.getDni())
                     .password(adminEps.getContrasena())
                     .roles(role)
@@ -74,11 +77,11 @@ public class UserLoginService implements UserDetailsService {
         UsuarioPorEpsEntity usuarioPorEps = usuarioPorEpsRepository.findByDni(username);
         if (usuarioPorEps != null) {
             String role = usuarioPorEps.getRolSistema().getNombreRol();
+            System.out.println("DEBUG LOGIN: Encontrado como Usuario por EPS. Rol: " + role);
             List<String> roles = new ArrayList<>();
             roles.add(role);
 
             return User.builder()
-                    // Usar el DNI como el username principal
                     .username(usuarioPorEps.getDni())
                     .password(usuarioPorEps.getContrasena())
                     .roles(roles.toArray(new String[0]))
@@ -87,6 +90,7 @@ public class UserLoginService implements UserDetailsService {
                     .build();
         }
 
+        System.out.println("DEBUG LOGIN: Usuario " + username + " no encontrado en ninguna tabla.");
         throw new UsernameNotFoundException("Usuario " + username + " no encontrado");
     }
 
@@ -99,12 +103,12 @@ public class UserLoginService implements UserDetailsService {
         return adminCentral;
     }
 
-    public AdminEpsEntity getAdminEpsByUsername(String username) {
+    public Optional<AdminEpsEntity> getAdminEpsByUsername(String username) { // ✅ CORRECCIÓN: Devuelve Optional
         AdminEpsEntity adminEps = adminEpsRepository.findByCorreo(username);
         if (adminEps == null) {
             adminEps = adminEpsRepository.findByDni(username);
         }
-        return adminEps;
+        return Optional.ofNullable(adminEps);
     }
 
     public UsuarioPorEpsEntity getUsuarioPorEpsByUsername(String username) {

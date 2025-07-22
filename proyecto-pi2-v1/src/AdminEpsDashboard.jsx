@@ -5,7 +5,7 @@ import EpsDetail from './EpsDetail';
 import axios from 'axios';
 
 function AdminEpsDashboard() {
-  const { user, logout } = useAuth();
+  const { user, logout, hasRole } = useAuth(); // Incluye hasRole
   const navigate = useNavigate();
   const [epsDetails, setEpsDetails] = useState(null);
   const [error, setError] = useState(null);
@@ -27,8 +27,8 @@ function AdminEpsDashboard() {
     rutaFoto: '',
     areaUsuarioCaracter: '',
     estado: 'ACTIVO',
-    idRolEps: '', // Mantener como string inicialmente para el select
-    idRolSistema: '', // Mantener como string inicialmente para el select
+    idRolEps: '',
+    idRolSistema: '',
     idEps: null
   });
   const [formError, setFormError] = useState(null);
@@ -60,11 +60,11 @@ function AdminEpsDashboard() {
       // Cargar roles para el formulario
       try {
         const rolesEpsResponse = await axios.get('http://localhost:8080/api/roles-eps', { withCredentials: true });
-        console.log("Roles EPS cargados:", rolesEpsResponse.data); // ✅ MUY IMPORTANTE: ¡Ver esta salida!
+        console.log("Roles EPS cargados (desde API):", rolesEpsResponse.data); // ✅ MUY IMPORTANTE: ¡Ver esta salida!
         setRolesEps(rolesEpsResponse.data);
 
         const rolesSistemaResponse = await axios.get('http://localhost:8080/api/roles-sistema', { withCredentials: true });
-        console.log("Roles Sistema cargados:", rolesSistemaResponse.data); // ✅ MUY IMPORTANTE: ¡Ver esta salida!
+        console.log("Roles Sistema cargados (desde API):", rolesSistemaResponse.data); // ✅ MUY IMPORTANTE: ¡Ver esta salida!
         setRolesSistema(rolesSistemaResponse.data);
       } catch (err) {
         console.error("Error al cargar roles:", err);
@@ -86,7 +86,7 @@ function AdminEpsDashboard() {
         setUsuariosEps(response.data);
       } catch (err) {
         console.error("Error de red o al cargar usuarios de EPS:", err);
-        setErrorUsuarios("No se pudo conectar al servidor o no tiene permisos para obtener los usuarios de la EPS.");
+        setFormError(`Error al cargar los usuarios de la EPS: ${err.response?.data?.message || err.message}`);
       } finally {
         setLoadingUsuarios(false);
       }
@@ -103,7 +103,7 @@ function AdminEpsDashboard() {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    // ✅ CAMBIO: Convertir a número para idRolEps y idRolSistema si no están vacíos
+    // Convertir a número para idRolEps y idRolSistema si no están vacíos
     if (name === 'idRolEps' || name === 'idRolSistema') {
         setFormData(prev => ({
             ...prev,
@@ -182,11 +182,16 @@ function AdminEpsDashboard() {
     setFormError(null);
     setFormMessage(null);
 
-    // ✅ Importante: Asegurar que los IDs de rol sean números o null/undefined si es que no se seleccionó nada
+    // Determinar si el Rol de Sistema está deshabilitado y usar el valor original del usuario
+    let finalIdRolSistema = formData.idRolSistema;
+    if (formMode === 'edit' && hasRole('ADMIN_EPS')) { // Si es Admin EPS y está editando
+        finalIdRolSistema = currentUser.rolSistema?.idRolSistema; // Usar el ID original del usuario actual
+    }
+
     const dataToSend = {
         ...formData,
         idRolEps: formData.idRolEps === '' ? null : parseInt(formData.idRolEps, 10),
-        idRolSistema: formData.idRolSistema === '' ? null : parseInt(formData.idRolSistema, 10),
+        idRolSistema: finalIdRolSistema === '' ? null : parseInt(finalIdRolSistema, 10), // Usar el finalIdRolSistema
     };
 
 
@@ -203,7 +208,7 @@ function AdminEpsDashboard() {
       const method = formMode === 'add' ? 'post' : 'put';
       const url = `http://localhost:8080/api/usuarios-eps`;
 
-      const response = await axios[method](url, dataToSend, { // ✅ Usar dataToSend
+      const response = await axios[method](url, dataToSend, {
         withCredentials: true
       });
 
@@ -235,6 +240,10 @@ function AdminEpsDashboard() {
   if (!user) {
     return <div>Acceso denegado.</div>;
   }
+
+  // Lógica para deshabilitar el Rol de Sistema en modo edición para ADMIN_EPS
+  const isRolSistemaDisabled = formMode === 'edit' && hasRole('ADMIN_EPS');
+
 
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
@@ -346,7 +355,7 @@ function AdminEpsDashboard() {
               <label>Rol en EPS:</label>
               <select name="idRolEps" value={formData.idRolEps} onChange={handleInputChange} required>
                 <option value="">Seleccione un rol...</option>
-                {/* ✅ IMPORTANTE: Eliminadas las opciones <option> insertadas manualmente */}
+                {/* Opciones cargadas dinámicamente desde el backend */}
                 {rolesEps.map(rol => (
                   <option key={rol.idRolEps} value={rol.idRolEps}>{rol.nombreRol}</option>
                 ))}
@@ -354,9 +363,16 @@ function AdminEpsDashboard() {
             </div>
             <div style={{ marginBottom: '10px' }}>
               <label>Rol de Sistema:</label>
-              <select name="idRolSistema" value={formData.idRolSistema} onChange={handleInputChange} required>
+              <select
+                name="idRolSistema"
+                value={formData.idRolSistema}
+                onChange={handleInputChange}
+                required
+                disabled={isRolSistemaDisabled} // Deshabilita si es Admin EPS y está editando
+                style={isRolSistemaDisabled ? { backgroundColor: '#e9ecef', cursor: 'not-allowed' } : {}}
+              >
                 <option value="">Seleccione un rol...</option>
-                {/* ✅ IMPORTANTE: Eliminadas las opciones <option> insertadas manualmente */}
+                {/* Opciones cargadas dinámicamente desde el backend */}
                 {rolesSistema.map(rol => (
                   <option key={rol.idRolSistema} value={rol.idRolSistema}>{rol.nombreRol}</option>
                 ))}
