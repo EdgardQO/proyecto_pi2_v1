@@ -37,8 +37,10 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/auth/login").permitAll()
                         .requestMatchers("/api/eps/my-eps").hasAnyRole("ADMIN_EPS", "USUARIO_EPS")
-                        // ✅ CAMBIO CRÍTICO: "ROLE_ADMIN_EPS" a "ADMIN_EPS"
                         .requestMatchers("/api/usuarios-eps/by-eps/**").hasAnyRole("ADMIN_CENTRAL", "ADMIN_EPS","USUARIO_EPS")
+                        // ✅ Estas líneas son cruciales para el acceso a los roles:
+                        .requestMatchers("/api/roles-eps").hasAnyRole("ADMIN_CENTRAL", "ADMIN_EPS")
+                        .requestMatchers("/api/roles-sistema").hasAnyRole("ADMIN_CENTRAL", "ADMIN_EPS")
                         .requestMatchers("/api/admin-central/**").hasRole("ADMIN_CENTRAL")
                         .requestMatchers("/api/admin-eps/**").hasAnyRole("ADMIN_CENTRAL", "ADMIN_EPS")
                         .requestMatchers("/api/eps/**").hasRole("ADMIN_CENTRAL")

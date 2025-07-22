@@ -7,6 +7,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional; // Importar Optional
 
 @Service
 public class AdminEpsService {
@@ -25,6 +26,11 @@ public class AdminEpsService {
 
     public AdminEpsEntity getByCorreo(String correo) {
         return this.adminEpsRepository.findByCorreo(correo);
+    }
+
+    // ✅ MÉTODO CORREGIDO: Obtener AdminEpsEntity por DNI, devolviendo Optional
+    public Optional<AdminEpsEntity> getByDni(String dni) {
+        return Optional.ofNullable(this.adminEpsRepository.findByDni(dni));
     }
 
     public AdminEpsEntity save(AdminEpsEntity adminEps) {
