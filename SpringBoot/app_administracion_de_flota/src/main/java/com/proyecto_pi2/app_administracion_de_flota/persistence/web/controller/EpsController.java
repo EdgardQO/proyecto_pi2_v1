@@ -63,11 +63,11 @@ public class EpsController {
         return ResponseEntity.badRequest().build();
     }
 
-    @DeleteMapping("/{idEsp}")
+    @DeleteMapping("/{idEps}") // ✅ CAMBIO: De idEsp a idEps para consistencia
     @Secured("ROLE_ADMIN_CENTRAL") // Solo Admin Central puede eliminar EPS
-    public ResponseEntity<Void> delete(@PathVariable Integer idEsp) {
-        if (this.epsService.exists(idEsp)) {
-            this.epsService.delete(idEsp);
+    public ResponseEntity<Void> delete(@PathVariable Integer idEps) { // ✅ CAMBIO: De idEsp a idEps para consistencia
+        if (this.epsService.exists(idEps)) {
+            this.epsService.delete(idEps);
             return ResponseEntity.ok().build();
         }
         return ResponseEntity.badRequest().build();

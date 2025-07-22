@@ -27,6 +27,11 @@ public class UsuarioPorEpsService {
         return this.usuarioPorEpsRepository.findByDni(dni);
     }
 
+    // ✅ NUEVO: Método para obtener todos los usuarios por el ID de la EPS
+    public List<UsuarioPorEpsEntity> getUsuariosByEpsId(Integer idEps) {
+        return this.usuarioPorEpsRepository.findByIdEps(idEps);
+    }
+
     public UsuarioPorEpsEntity save(UsuarioPorEpsEntity usuarioPorEps) {
         // Codificar la contraseña antes de guardar
         usuarioPorEps.setContrasena(passwordEncoder.encode(usuarioPorEps.getContrasena()));
