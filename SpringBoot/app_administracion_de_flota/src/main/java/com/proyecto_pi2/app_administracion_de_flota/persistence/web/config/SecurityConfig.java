@@ -12,10 +12,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
+import org.springframework.web.cors.CorsConfigurationSource; // Asegúrate de que este import esté presente
 
 import java.util.Arrays;
 import java.util.List;
@@ -40,11 +37,13 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         // Permitir acceso público al endpoint de login
                         .requestMatchers("/api/auth/login").permitAll()
+                        // ✅ CAMBIO CRÍTICO: Mover esta regla específica antes que la general /api/eps/**
+                        .requestMatchers("/api/eps/my-eps").hasAnyRole("ADMIN_EPS", "USUARIO_EPS")
                         // Rutas para administradores centrales
                         .requestMatchers("/api/admin-central/**").hasRole("ADMIN_CENTRAL")
                         // Rutas para administradores de EPS
                         .requestMatchers("/api/admin-eps/**").hasAnyRole("ADMIN_CENTRAL", "ADMIN_EPS")
-                        // Rutas para EPS (puede ser gestionado por admin central)
+                        // Rutas generales para EPS (otras operaciones que solo haría Admin Central)
                         .requestMatchers("/api/eps/**").hasRole("ADMIN_CENTRAL")
                         // Rutas para usuarios por EPS (puede ser gestionado por admin de EPS o admin central)
                         .requestMatchers("/api/usuarios-eps/**").hasAnyRole("ADMIN_CENTRAL", "ADMIN_EPS", "USUARIO_EPS")
