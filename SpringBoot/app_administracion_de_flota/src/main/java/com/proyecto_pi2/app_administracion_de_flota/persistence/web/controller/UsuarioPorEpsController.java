@@ -20,22 +20,20 @@ public class UsuarioPorEpsController {
     }
 
     @GetMapping
-    // ✅ CAMBIO CRÍTICO: "ROLE_ADMIN_EPS" a "ADMIN_EPS"
-    @Secured({"ROLE_ADMIN_CENTRAL", "ADMIN_EPS"})
+    @Secured({"ROLE_ADMIN_CENTRAL", "ROLE_ADMIN_EPS"})
     public ResponseEntity<List<UsuarioPorEpsEntity>> getAll() {
         return ResponseEntity.ok(this.usuarioPorEpsService.getAll());
     }
 
     @GetMapping("/dni/{dni}")
-    // ✅ CAMBIO CRÍTICO: "ROLE_USUARIO_EPS" a "USUARIO_EPS"
-    @Secured({"ROLE_ADMIN_CENTRAL", "ADMIN_EPS", "USUARIO_EPS"})
+    @Secured({"ROLE_ADMIN_CENTRAL", "ROLE_ADMIN_EPS", "ROLE_USUARIO_EPS"})
     public ResponseEntity<UsuarioPorEpsEntity> getByDni(@PathVariable String dni) {
         return ResponseEntity.ok(this.usuarioPorEpsService.getByDni(dni));
     }
 
     @GetMapping("/by-eps/{idEps}")
-    // ✅ CAMBIO CRÍTICO: "ROLE_ADMIN_EPS" a "ADMIN_EPS"
-    @Secured({"ROLE_ADMIN_CENTRAL", "ADMIN_EPS"})
+    // ✅ CORRECCIÓN: Se añade "ROLE_USUARIO_EPS" para permitir que los usuarios de EPS vean a otros usuarios.
+    @Secured({"ROLE_ADMIN_CENTRAL", "ROLE_ADMIN_EPS", "ROLE_USUARIO_EPS"})
     public ResponseEntity<List<UsuarioPorEpsEntity>> getUsuariosByEps(@PathVariable Integer idEps) {
         List<UsuarioPorEpsEntity> usuarios = usuarioPorEpsService.getUsuariosByEpsId(idEps);
         if (usuarios.isEmpty()) {
@@ -45,8 +43,7 @@ public class UsuarioPorEpsController {
     }
 
     @PostMapping
-    // ✅ CAMBIO CRÍTICO: "ROLE_ADMIN_EPS" a "ADMIN_EPS"
-    @Secured({"ROLE_ADMIN_CENTRAL", "ADMIN_EPS"})
+    @Secured({"ROLE_ADMIN_CENTRAL", "ROLE_ADMIN_EPS"})
     public ResponseEntity<UsuarioPorEpsEntity> add(@RequestBody UsuarioPorEpsEntity usuarioPorEps) {
         if (usuarioPorEps.getIdUsuarioPorEps() == null || !this.usuarioPorEpsService.exists(usuarioPorEps.getIdUsuarioPorEps())) {
             return ResponseEntity.ok(this.usuarioPorEpsService.save(usuarioPorEps));
@@ -55,8 +52,7 @@ public class UsuarioPorEpsController {
     }
 
     @PutMapping
-    // ✅ CAMBIO CRÍTICO: "ROLE_ADMIN_EPS" a "ADMIN_EPS"
-    @Secured({"ROLE_ADMIN_CENTRAL", "ADMIN_EPS"})
+    @Secured({"ROLE_ADMIN_CENTRAL", "ROLE_ADMIN_EPS"})
     public ResponseEntity<UsuarioPorEpsEntity> update(@RequestBody UsuarioPorEpsEntity usuarioPorEps) {
         if (usuarioPorEps.getIdUsuarioPorEps() != null && this.usuarioPorEpsService.exists(usuarioPorEps.getIdUsuarioPorEps())) {
             return ResponseEntity.ok(this.usuarioPorEpsService.save(usuarioPorEps));
@@ -65,8 +61,7 @@ public class UsuarioPorEpsController {
     }
 
     @DeleteMapping("/{idUsuarioPorEps}")
-    // ✅ CAMBIO CRÍTICO: "ROLE_ADMIN_EPS" a "ADMIN_EPS"
-    @Secured({"ROLE_ADMIN_CENTRAL", "ADMIN_EPS"})
+    @Secured({"ROLE_ADMIN_CENTRAL", "ROLE_ADMIN_EPS"})
     public ResponseEntity<Void> delete(@PathVariable Integer idUsuarioPorEps) {
         if (this.usuarioPorEpsService.exists(idUsuarioPorEps)) {
             this.usuarioPorEpsService.delete(idUsuarioPorEps);
