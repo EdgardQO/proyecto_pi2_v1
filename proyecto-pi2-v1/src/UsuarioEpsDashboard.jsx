@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import { useNavigate } from 'react-router-dom';
-import EpsDetail from './EpsDetail'; // Importa el nuevo componente
+import EpsDetail from './EpsDetail'; // Importa el nuevo componente y corrige la ruta
 
 function UsuarioEpsDashboard() {
   const { user, logout } = useAuth();
@@ -12,13 +12,13 @@ function UsuarioEpsDashboard() {
 
   useEffect(() => {
     const fetchEpsDetails = async () => {
-      if (user && user.idEps) {
+      // Asegúrate de que user existe y user.idEps tiene un valor numérico válido
+      if (user && typeof user.idEps === 'number' && user.idEps > 0) {
         try {
           // Asumiendo que /api/eps/my-eps es el endpoint para obtener los detalles de la EPS del usuario
           const response = await fetch(`http://localhost:8080/api/eps/my-eps?id=${user.idEps}`, {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}` // Si usas JWT en el futuro
-            }
+            credentials: 'include' // ✅ CAMBIO CRÍTICO: Indica al navegador que incluya cookies/credenciales
+            // Ya no necesitas el header de Authorization: Bearer para HTTP Basic con sesiones
           });
           if (response.ok) {
             const data = await response.json();
@@ -35,7 +35,7 @@ function UsuarioEpsDashboard() {
         }
       } else {
         setLoadingEps(false);
-        setError("ID de EPS no disponible para este usuario.");
+        setError("ID de EPS no disponible o inválido para este usuario. Asegúrate de que el usuario esté correctamente asociado a una EPS.");
       }
     };
 

@@ -16,8 +16,8 @@ public class EpsEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_eps", nullable = false)
-    private Integer idEsp;
+    @Column(name = "id_eps", nullable = false) // Se mantiene el nombre de la columna en la base de datos
+    private Integer idEps; // ✅ CAMBIO: Renombrado de 'idEsp' a 'idEps' para consistencia
 
     @Column(name = "nombre_eps", nullable = false, length = 100, unique = true)
     private String nombreEps;

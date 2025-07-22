@@ -48,7 +48,7 @@ public class EpsController {
     @PostMapping
     @Secured("ROLE_ADMIN_CENTRAL") // Solo Admin Central puede añadir EPS
     public ResponseEntity<EpsEntity> add(@RequestBody EpsEntity eps) {
-        if (eps.getIdEsp() == null || !this.epsService.exists(eps.getIdEsp())) {
+        if (eps.getIdEps() == null || !this.epsService.exists(eps.getIdEps())) {
             return ResponseEntity.ok(this.epsService.save(eps));
         }
         return ResponseEntity.badRequest().build();
@@ -57,7 +57,7 @@ public class EpsController {
     @PutMapping
     @Secured("ROLE_ADMIN_CENTRAL") // Solo Admin Central puede actualizar EPS
     public ResponseEntity<EpsEntity> update(@RequestBody EpsEntity eps) {
-        if (eps.getIdEsp() != null && this.epsService.exists(eps.getIdEsp())) {
+        if (eps.getIdEps() != null && this.epsService.exists(eps.getIdEps())) {
             return ResponseEntity.ok(this.epsService.save(eps));
         }
         return ResponseEntity.badRequest().build();

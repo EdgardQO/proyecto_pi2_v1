@@ -34,11 +34,11 @@ public class EpsService {
         return this.epsRepository.save(eps);
     }
 
-    public void delete(Integer idEsp) {
-        this.epsRepository.deleteById(idEsp);
+    public void delete(Integer idEps) {
+        this.epsRepository.deleteById(idEps);
     }
 
-    public boolean exists(Integer idEsp) {
-        return this.epsRepository.existsById(idEsp);
+    public boolean exists(Integer idEps) {
+        return this.epsRepository.existsById(idEps);
     }
 }
