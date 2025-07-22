@@ -7,7 +7,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional; // Importar Optional
 
 @Service
 public class UsuarioPorEpsService {
@@ -24,30 +23,18 @@ public class UsuarioPorEpsService {
         return this.usuarioPorEpsRepository.findAll();
     }
 
-    public Optional<UsuarioPorEpsEntity> getByDni(String dni) { // ✅ CORREGIDO: Ahora devuelve Optional
-        return Optional.ofNullable(this.usuarioPorEpsRepository.findByDni(dni));
+    public UsuarioPorEpsEntity getByDni(String dni) {
+        return this.usuarioPorEpsRepository.findByDni(dni);
     }
 
-    // ✅ MÉTODO PRESENTE: Para obtener un usuario por su ID
-    public Optional<UsuarioPorEpsEntity> getById(Integer idUsuarioPorEps) {
-        return this.usuarioPorEpsRepository.findById(idUsuarioPorEps);
-    }
-
-    // ✅ MÉTODO PRESENTE: Para obtener todos los usuarios por el ID de la EPS
+    // ✅ NUEVO: Método para obtener todos los usuarios por el ID de la EPS
     public List<UsuarioPorEpsEntity> getUsuariosByEpsId(Integer idEps) {
         return this.usuarioPorEpsRepository.findByIdEps(idEps);
     }
 
     public UsuarioPorEpsEntity save(UsuarioPorEpsEntity usuarioPorEps) {
-        // Solo codificar la contraseña si no está vacía o es un nuevo usuario
-        if (usuarioPorEps.getContrasena() != null && !usuarioPorEps.getContrasena().isEmpty()) {
-            usuarioPorEps.setContrasena(passwordEncoder.encode(usuarioPorEps.getContrasena()));
-        } else if (usuarioPorEps.getIdUsuarioPorEps() != null && this.usuarioPorEpsRepository.existsById(usuarioPorEps.getIdUsuarioPorEps())) {
-            // Si es una actualización y la contraseña está vacía, mantener la contraseña existente
-            this.usuarioPorEpsRepository.findById(usuarioPorEps.getIdUsuarioPorEps()).ifPresent(existingUser -> {
-                usuarioPorEps.setContrasena(existingUser.getContrasena());
-            });
-        }
+        // Codificar la contraseña antes de guardar
+        usuarioPorEps.setContrasena(passwordEncoder.encode(usuarioPorEps.getContrasena()));
         return this.usuarioPorEpsRepository.save(usuarioPorEps);
     }
 
