@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext'; // Asegúrate de importar useAuth
+import './Login.css'
 
 function LoginForm() {
   const [username, setUsername] = useState('');
