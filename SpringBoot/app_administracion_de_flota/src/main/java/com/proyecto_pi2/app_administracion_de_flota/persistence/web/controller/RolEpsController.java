@@ -23,7 +23,7 @@ public class RolEpsController {
     }
 
     @GetMapping
-    @Secured({"ROLE_ADMIN_CENTRAL", "ROLE_ADMIN_EPS"}) // Solo estos roles pueden ver los roles de EPS
+    @Secured({"ROLE_ADMIN_CENTRAL", "ROLE_ADMIN_EPS"})
     public ResponseEntity<List<RolEpsEntity>> getAllRolesEps() {
         return ResponseEntity.ok(this.rolEpsService.getAllRolesEps());
     }

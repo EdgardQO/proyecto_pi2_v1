@@ -16,8 +16,8 @@ public class EpsEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_eps", nullable = false) // Se mantiene el nombre de la columna en la base de datos
-    private Integer idEps; // ✅ CAMBIO: Renombrado de 'idEsp' a 'idEps' para consistencia
+    @Column(name = "id_eps", nullable = false)
+    private Integer idEps;
 
     @Column(name = "nombre_eps", nullable = false, length = 100, unique = true)
     private String nombreEps;
@@ -35,12 +35,12 @@ public class EpsEntity {
     private LocalDateTime fechaRegistro;
 
     @Column(name = "usuario_creador")
-    private Integer usuarioCreador; // ID del administrador central que creó esta EPS
+    private Integer usuarioCreador;
 
     @Column(nullable = false, length = 10)
-    private String estado; // e.g., "ACTIVO", "INACTIVO"
+    private String estado;
 
     @ManyToOne
     @JoinColumn(name = "usuario_creador", referencedColumnName = "id_admin_central", insertable = false, updatable = false)
-    private AdministradorCentralEntity administradorCreador; // Relación con el administrador central
+    private AdministradorCentralEntity administradorCreador;
 }

@@ -7,7 +7,6 @@ function HomePage() {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    // Pasa la función de navegación como un callback
     logout(() => {
       navigate('/login');
     });
@@ -18,14 +17,11 @@ function HomePage() {
       <h1>Bienvenido al Sistema de Administración de Flota</h1>
       {isAuthenticated() ? (
         <div>
-          {/* Se agrega una verificación para user.roles antes de intentar .join() */}
           <p>
             Has iniciado sesión como: {user.fullName || user.username}
             {user.roles && user.roles.length > 0 ? (
-              // Si user.roles existe y no está vacío, lo unimos.
               ` (Roles: ${user.roles.join(', ')})`
             ) : (
-              // Si user.roles no existe o está vacío, mostramos un mensaje alternativo.
               " (Roles: No especificados)"
             )}
           </p>

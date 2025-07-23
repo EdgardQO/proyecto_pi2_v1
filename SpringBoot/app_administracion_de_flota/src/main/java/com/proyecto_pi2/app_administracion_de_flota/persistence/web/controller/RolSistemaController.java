@@ -23,7 +23,7 @@ public class RolSistemaController {
     }
 
     @GetMapping
-    @Secured({"ROLE_ADMIN_CENTRAL", "ROLE_ADMIN_EPS"}) // Solo estos roles pueden ver los roles de sistema
+    @Secured({"ROLE_ADMIN_CENTRAL", "ROLE_ADMIN_EPS"})
     public ResponseEntity<List<RolSistemaEntity>> getAllRolesSistema() {
         return ResponseEntity.ok(this.rolSistemaService.getAllRolesSistema());
     }

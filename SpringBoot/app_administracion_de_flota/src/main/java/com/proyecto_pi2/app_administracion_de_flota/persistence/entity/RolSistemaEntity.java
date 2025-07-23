@@ -18,5 +18,5 @@ public class RolSistemaEntity {
     private Integer idRolSistema;
 
     @Column(name = "nombre_rol", nullable = false, length = 100, unique = true)
-    private String nombreRol; // Ej: ADMIN_CENTRAL, ADMIN_EPS, USUARIO_EPS
+    private String nombreRol;
 }

@@ -1,10 +1,8 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 
-// Crea el contexto
 const AuthContext = createContext(null);
 
-// Configura una instancia de Axios global con interceptores
 const authAxios = axios.create();
 
 export const AuthProvider = ({ children }) => {
@@ -13,25 +11,22 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
-    const storedJwt = localStorage.getItem('jwt'); // Recuperar el JWT
+    const storedJwt = localStorage.getItem('jwt');
 
     if (storedUser && storedJwt) {
       try {
         const parsedUser = JSON.parse(storedUser);
         setUser(parsedUser);
-        // Configurar el header de autorización para todas las peticiones de authAxios
         authAxios.defaults.headers.common['Authorization'] = `Bearer ${storedJwt}`;
       } catch (error) {
         console.error("Error al parsear el usuario o JWT de localStorage:", error);
         localStorage.removeItem('user');
-        localStorage.removeItem('jwt'); // Limpiar también el JWT si hay un error
+        localStorage.removeItem('jwt');
       }
     }
     setLoading(false);
   }, []);
 
-  // Interceptor para añadir el token JWT a todas las peticiones salientes
-  // Esto asegura que `axios` normal y `authAxios` usen el token
   axios.interceptors.request.use(
     (config) => {
       const token = localStorage.getItem('jwt');
@@ -48,16 +43,13 @@ export const AuthProvider = ({ children }) => {
   const login = (userData) => {
     setUser(userData);
     localStorage.setItem('user', JSON.stringify(userData));
-    localStorage.setItem('jwt', userData.jwt); // Guardar el JWT recibido
-    authAxios.defaults.headers.common['Authorization'] = `Bearer ${userData.jwt}`; // Actualizar el header de Axios
+    localStorage.setItem('jwt', userData.jwt);
+    authAxios.defaults.headers.common['Authorization'] = `Bearer ${userData.jwt}`;
   };
 
   const logout = async (callback) => {
     try {
       console.log("Frontend: Enviando solicitud de cierre de sesión al backend (para limpieza del lado del servidor)...");
-      // La llamada al backend es principalmente para limpiar el contexto de seguridad del servidor
-      // y asegurar que cualquier sesión HTTP remanente sea invalidada.
-      // Con JWTs, el logout es principalmente una limpieza del token en el cliente.
       await axios.post('http://localhost:8080/api/auth/logout', {}, { withCredentials: true });
       console.log("Frontend: Solicitud de cierre de sesión al backend completada.");
     } catch (error) {
@@ -65,14 +57,12 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setUser(null);
       localStorage.removeItem('user');
-      localStorage.removeItem('jwt'); // Eliminar el JWT del localStorage
-      delete authAxios.defaults.headers.common['Authorization']; // Eliminar el header de Axios
+      localStorage.removeItem('jwt');
+      delete authAxios.defaults.headers.common['Authorization'];
 
-      // --- Limpiar todas las cookies (importante para evitar problemas residuales) ---
       document.cookie.split(";").forEach(function(c) {
           document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
       });
-      // --- FIN limpieza de cookies ---
 
       console.log("Frontend: Estado de usuario local, localStorage y JWT limpiados.");
       if (callback) {
@@ -90,7 +80,6 @@ export const AuthProvider = ({ children }) => {
   };
 
   const isAuthenticated = () => {
-    // Un usuario está autenticado si existe en el estado y hay un JWT en localStorage
     return !!user && !!localStorage.getItem('jwt');
   };
 
@@ -101,7 +90,7 @@ export const AuthProvider = ({ children }) => {
     logout,
     hasRole,
     isAuthenticated,
-    authAxios, // Exponer la instancia de axios pre-configurada (opcional, pero útil)
+    authAxios,
   };
 
   return (

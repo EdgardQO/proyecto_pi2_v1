@@ -6,7 +6,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface EpsRepository extends ListCrudRepository<EpsEntity, Integer> {
-    // Puedes añadir métodos de búsqueda si los necesitas, por ejemplo, por RUC o nombre
     EpsEntity findByRuc(String ruc);
     EpsEntity findByNombreEps(String nombreEps);
 }

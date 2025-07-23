@@ -2,11 +2,11 @@ package com.proyecto_pi2.app_administracion_de_flota.persistence.service;
 import com.proyecto_pi2.app_administracion_de_flota.persistence.entity.RolEpsEntity;
 import com.proyecto_pi2.app_administracion_de_flota.persistence.repository.RolEpsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder; // Mantener PasswordEncoder
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional; // Necesario para findByCorreo
+import java.util.Optional;
 
 @Service
 public class RolEpsService {

@@ -18,10 +18,10 @@ public class UsuarioPorEpsEntity {
     private Integer idUsuarioPorEps;
 
     @Column(name = "id_rol_eps", nullable = false)
-    private Integer idRolEps; // ID del rol dentro de la EPS
+    private Integer idRolEps;
 
     @Column(name = "id_eps", nullable = false)
-    private Integer idEps; // ID de la EPS a la que pertenece el usuario
+    private Integer idEps;
 
     @Column(nullable = false, length = 100)
     private String nombres;
@@ -29,11 +29,11 @@ public class UsuarioPorEpsEntity {
     @Column(nullable = false, length = 100)
     private String apellidos;
 
-    @Column(nullable = false, length = 255) // Para contraseñas encriptadas
+    @Column(nullable = false, length = 255)
     private String contrasena;
 
     @Column(nullable = false, length = 8, unique = true)
-    private String dni; // Usado como username para login
+    private String dni;
 
     @Column(name = "ruta_foto", length = 200)
     private String rutaFoto;
@@ -42,9 +42,9 @@ public class UsuarioPorEpsEntity {
     private String areaUsuarioCaracter;
 
     @Column(nullable = false, length = 10)
-    private String estado; // e.g., "ACTIVO", "INACTIVO"
+    private String estado;
 
-    @Column(name = "id_rol_sistema", nullable = false) // NUEVO: Columna para el rol de sistema
+    @Column(name = "id_rol_sistema", nullable = false)
     private Integer idRolSistema;
 
     @ManyToOne
@@ -57,5 +57,5 @@ public class UsuarioPorEpsEntity {
 
     @ManyToOne
     @JoinColumn(name = "id_rol_sistema", referencedColumnName = "id_rol_sistema", insertable = false, updatable = false)
-    private RolSistemaEntity rolSistema; // Relación con RolSistemaEntity
+    private RolSistemaEntity rolSistema;
 }

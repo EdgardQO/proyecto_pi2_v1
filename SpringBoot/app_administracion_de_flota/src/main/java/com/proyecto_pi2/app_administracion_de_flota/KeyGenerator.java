@@ -6,7 +6,6 @@ import java.util.Base64;
 
 public class KeyGenerator {
     public static void main(String[] args) {
-        // Esto generará una CLAVE SECRETA ALEATORIA para firmar tus JWTs.
         String secretKey = Base64.getEncoder().encodeToString(Keys.secretKeyFor(SignatureAlgorithm.HS256).getEncoded());
         System.out.println("Tu clave JWT generada: " + secretKey);
     }

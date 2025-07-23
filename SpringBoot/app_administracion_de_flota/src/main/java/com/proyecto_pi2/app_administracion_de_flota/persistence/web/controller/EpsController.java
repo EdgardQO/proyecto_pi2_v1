@@ -5,8 +5,7 @@ import com.proyecto_pi2.app_administracion_de_flota.persistence.service.EpsServi
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.security.access.annotation.Secured; // Importar @Secured
-
+import org.springframework.security.access.annotation.Secured;
 import java.util.List;
 
 @RestController
@@ -20,25 +19,20 @@ public class EpsController {
     }
 
     @GetMapping
-    @Secured("ROLE_ADMIN_CENTRAL") // Solo Admin Central puede ver todas las EPS
+    @Secured("ROLE_ADMIN_CENTRAL")
     public ResponseEntity<List<EpsEntity>> getAll() {
         return ResponseEntity.ok(this.epsService.getAll());
     }
 
     @GetMapping("/ruc/{ruc}")
-    @Secured("ROLE_ADMIN_CENTRAL") // Solo Admin Central puede buscar por RUC
+    @Secured("ROLE_ADMIN_CENTRAL")
     public ResponseEntity<EpsEntity> getByRuc(@PathVariable String ruc) {
         return ResponseEntity.ok(this.epsService.getByRuc(ruc));
     }
 
-    // Nuevo endpoint para que Admin EPS y Usuario EPS accedan a su propia EPS
     @GetMapping("/my-eps")
     @Secured({"ROLE_ADMIN_EPS", "ROLE_USUARIO_EPS"})
     public ResponseEntity<EpsEntity> getMyEps(@RequestParam Integer id) {
-        // En una aplicación real, aquí deberías verificar que el id de EPS
-        // solicitado coincide con el id de EPS del usuario autenticado.
-        // Por simplicidad, y como el frontend envía su propio id_eps,
-        // confiamos en ese id por ahora.
         return epsService.getById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -46,7 +40,7 @@ public class EpsController {
 
 
     @PostMapping
-    @Secured("ROLE_ADMIN_CENTRAL") // Solo Admin Central puede añadir EPS
+    @Secured("ROLE_ADMIN_CENTRAL")
     public ResponseEntity<EpsEntity> add(@RequestBody EpsEntity eps) {
         if (eps.getIdEps() == null || !this.epsService.exists(eps.getIdEps())) {
             return ResponseEntity.ok(this.epsService.save(eps));
@@ -55,7 +49,7 @@ public class EpsController {
     }
 
     @PutMapping
-    @Secured("ROLE_ADMIN_CENTRAL") // Solo Admin Central puede actualizar EPS
+    @Secured("ROLE_ADMIN_CENTRAL")
     public ResponseEntity<EpsEntity> update(@RequestBody EpsEntity eps) {
         if (eps.getIdEps() != null && this.epsService.exists(eps.getIdEps())) {
             return ResponseEntity.ok(this.epsService.save(eps));
@@ -63,9 +57,9 @@ public class EpsController {
         return ResponseEntity.badRequest().build();
     }
 
-    @DeleteMapping("/{idEps}") // ✅ CAMBIO: De idEsp a idEps para consistencia
-    @Secured("ROLE_ADMIN_CENTRAL") // Solo Admin Central puede eliminar EPS
-    public ResponseEntity<Void> delete(@PathVariable Integer idEps) { // ✅ CAMBIO: De idEsp a idEps para consistencia
+    @DeleteMapping("/{idEps}")
+    @Secured("ROLE_ADMIN_CENTRAL")
+    public ResponseEntity<Void> delete(@PathVariable Integer idEps) {
         if (this.epsService.exists(idEps)) {
             this.epsService.delete(idEps);
             return ResponseEntity.ok().build();

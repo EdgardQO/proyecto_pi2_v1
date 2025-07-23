@@ -4,12 +4,10 @@ import com.proyecto_pi2.app_administracion_de_flota.persistence.entity.UsuarioPo
 import org.springframework.data.repository.ListCrudRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List; // Importar List
-
+import java.util.List;
 @Repository
 public interface UsuarioPorEpsRepository extends ListCrudRepository<UsuarioPorEpsEntity, Integer> {
     UsuarioPorEpsEntity findByDni(String dni);
 
-    // ✅ NUEVO: Método para buscar usuarios por id_eps
     List<UsuarioPorEpsEntity> findByIdEps(Integer idEps);
 }

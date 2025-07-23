@@ -18,11 +18,9 @@ public class AdminEpsEntity {
     @Column(name = "id_admin_eps", nullable = false)
     private Integer idAdminEps;
 
-    // --- CAMBIO CLAVE AQUÍ ---
-    @JsonProperty("id_eps") // Indica a Jackson que mapee el campo 'id_eps' del JSON a esta propiedad.
+    @JsonProperty("id_eps")
     @Column(name = "id_eps", nullable = false)
     private Integer idEps;
-    // --- FIN CAMBIO ---
 
     @Column(nullable = false, length = 8, unique = true)
     private String dni;
@@ -37,18 +35,18 @@ public class AdminEpsEntity {
     private String telefono;
 
     @Column(nullable = false, length = 150, unique = true)
-    private String correo; // Usado como username para login del admin de EPS
+    private String correo;
 
-    @Column(nullable = false, length = 255) // Para contraseñas encriptadas
+    @Column(nullable = false, length = 255)
     private String contrasena;
 
     @Column(name = "ruta_foto", length = 200)
     private String rutaFoto;
 
     @Column(nullable = false, length = 10)
-    private String estado; // e.g., "ACTIVO", "INACTIVO"
+    private String estado;
 
-    @Column(name = "id_rol_sistema", nullable = false) // NUEVO: Columna para el rol de sistema
+    @Column(name = "id_rol_sistema", nullable = false)
     private Integer idRolSistema;
 
     @ManyToOne
@@ -57,5 +55,5 @@ public class AdminEpsEntity {
 
     @ManyToOne
     @JoinColumn(name = "id_rol_sistema", referencedColumnName = "id_rol_sistema", insertable = false, updatable = false)
-    private RolSistemaEntity rolSistema; // Relación con RolSistemaEntity
+    private RolSistemaEntity rolSistema;
 }

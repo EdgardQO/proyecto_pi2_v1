@@ -30,21 +30,21 @@ public class AdministradorCentralEntity {
     private String telefono;
 
     @Column(nullable = false, length = 150, unique = true)
-    private String correo; // Usado como username para login
+    private String correo;
 
-    @Column(nullable = false, length = 255) // Para contraseñas encriptadas
+    @Column(nullable = false, length = 255)
     private String contrasena;
 
     @Column(name = "ruta_foto", length = 200)
     private String rutaFoto;
 
     @Column(nullable = false, length = 10)
-    private String estado; // e.g., "ACTIVO", "INACTIVO"
+    private String estado;
 
-    @Column(name = "id_rol_sistema", nullable = false) // NUEVO: Columna para el rol de sistema
+    @Column(name = "id_rol_sistema", nullable = false)
     private Integer idRolSistema;
 
     @ManyToOne
     @JoinColumn(name = "id_rol_sistema", referencedColumnName = "id_rol_sistema", insertable = false, updatable = false)
-    private RolSistemaEntity rolSistema; // Relación con RolSistemaEntity
+    private RolSistemaEntity rolSistema;
 }

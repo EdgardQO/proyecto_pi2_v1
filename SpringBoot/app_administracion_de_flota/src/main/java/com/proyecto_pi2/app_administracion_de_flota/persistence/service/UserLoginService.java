@@ -34,7 +34,7 @@ public class UserLoginService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        // 1. Intentar cargar como Administrador Central (prioridad por correo, luego por DNI)
+        //(prioridad por correo, luego por DNI)
         AdministradorCentralEntity adminCentral = adminCentralRepository.findByCorreo(username);
         if (adminCentral == null) {
             adminCentral = adminCentralRepository.findByDni(username);
@@ -52,7 +52,7 @@ public class UserLoginService implements UserDetailsService {
                     .build();
         }
 
-        // 2. Intentar cargar como Administrador de EPS (prioridad por correo, luego por DNI)
+        //como Administrador de EPS (prioridad por correo, luego por DNI)
         AdminEpsEntity adminEps = adminEpsRepository.findByCorreo(username);
         if (adminEps == null) {
             adminEps = adminEpsRepository.findByDni(username);
@@ -61,7 +61,6 @@ public class UserLoginService implements UserDetailsService {
         if (adminEps != null) {
             String role = adminEps.getRolSistema().getNombreRol();
             return User.builder()
-                    // Usar el correo o DNI como el username principal
                     .username(adminEps.getCorreo() != null ? adminEps.getCorreo() : adminEps.getDni())
                     .password(adminEps.getContrasena())
                     .roles(role)
@@ -70,7 +69,7 @@ public class UserLoginService implements UserDetailsService {
                     .build();
         }
 
-        // 3. Intentar cargar como Usuario por EPS (solo por DNI)
+        //como Usuario por EPS (solo por DNI)
         UsuarioPorEpsEntity usuarioPorEps = usuarioPorEpsRepository.findByDni(username);
         if (usuarioPorEps != null) {
             String role = usuarioPorEps.getRolSistema().getNombreRol();
@@ -78,7 +77,6 @@ public class UserLoginService implements UserDetailsService {
             roles.add(role);
 
             return User.builder()
-                    // Usar el DNI como el username principal
                     .username(usuarioPorEps.getDni())
                     .password(usuarioPorEps.getContrasena())
                     .roles(roles.toArray(new String[0]))
@@ -90,7 +88,6 @@ public class UserLoginService implements UserDetailsService {
         throw new UsernameNotFoundException("Usuario " + username + " no encontrado");
     }
 
-    // Métodos auxiliares para obtener la entidad completa después de la autenticación
     public AdministradorCentralEntity getAdminCentralByUsername(String username) {
         AdministradorCentralEntity adminCentral = adminCentralRepository.findByCorreo(username);
         if (adminCentral == null) {

@@ -32,7 +32,6 @@ public class UsuarioPorEpsController {
     }
 
     @GetMapping("/by-eps/{idEps}")
-    // ✅ CORRECCIÓN: Se añade "ROLE_USUARIO_EPS" para permitir que los usuarios de EPS vean a otros usuarios.
     @Secured({"ROLE_ADMIN_CENTRAL", "ROLE_ADMIN_EPS", "ROLE_USUARIO_EPS"})
     public ResponseEntity<List<UsuarioPorEpsEntity>> getUsuariosByEps(@PathVariable Integer idEps) {
         List<UsuarioPorEpsEntity> usuarios = usuarioPorEpsService.getUsuariosByEpsId(idEps);

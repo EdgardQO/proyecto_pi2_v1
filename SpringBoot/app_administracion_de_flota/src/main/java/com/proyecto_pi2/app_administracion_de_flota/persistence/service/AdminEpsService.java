@@ -35,9 +35,6 @@ public class AdminEpsService {
     public AdminEpsEntity save(AdminEpsEntity adminEps) {
         System.out.println("DEBUG (Service): adminEps.getIdEps() = " + adminEps.getIdEps() + ", adminEps.getEps().getIdEps() = " + (adminEps.getEps() != null ? adminEps.getEps().getIdEps() : "null (EpsEntity object is null)")); // <-- Añade esta línea
 
-        // ... (el resto del código de save, incluyendo la encriptación de contraseña y la lógica de adjuntar EpsEntity) ...
-        // Tu código anterior lanzará la excepción en la línea 69, así que esta línea de debug debería aparecer justo antes.
-
         if (adminEps.getIdAdminEps() == null) {
             adminEps.setContrasena(passwordEncoder.encode(adminEps.getContrasena()));
         } else {
@@ -56,15 +53,14 @@ public class AdminEpsService {
             }
         }
 
-        if (adminEps.getIdEps() != null) { // Esta es la línea que estás depurando.
+        if (adminEps.getIdEps() != null) {
             Optional<EpsEntity> optionalEps = epsRepository.findById(adminEps.getIdEps());
             if (optionalEps.isPresent()) {
                 adminEps.setEps(optionalEps.get());
             } else {
-                // Manejar el caso donde el idEps no corresponde a una EPS existente.
             }
         } else {
-            throw new IllegalArgumentException("El ID de EPS no puede ser nulo."); // Línea 69
+            throw new IllegalArgumentException("El ID de EPS no puede ser nulo.");
         }
 
         return this.adminEpsRepository.save(adminEps);

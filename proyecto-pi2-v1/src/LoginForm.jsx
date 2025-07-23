@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from './AuthContext'; // Asegúrate de importar useAuth
+import { useAuth } from './AuthContext';
 import './Login.css'
 
 function LoginForm() {
@@ -9,7 +9,7 @@ function LoginForm() {
   const [message, setMessage] = useState('');
   const [isError, setIsError] = useState(false);
   const navigate = useNavigate();
-  const { login } = useAuth(); // Obtén la función login del contexto
+  const { login } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,18 +21,16 @@ function LoginForm() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          // Ya no necesitas el header de Authorization para el login POST
         },
         body: JSON.stringify({ username, password }),
       });
 
       if (response.ok) {
-        const userData = await response.json(); // Espera un JSON con JWT, username, fullName, roles, idEps (si aplica)
+        const userData = await response.json();
         setMessage(`¡Login exitoso! Bienvenido ${userData.fullName || userData.username}`);
         setIsError(false);
-        login(userData); // Almacena todos los datos del usuario y el JWT en el contexto
+        login(userData);
 
-        // Redirige según el rol obtenido
         if (userData.roles.includes('ROLE_ADMIN_CENTRAL')) {
           navigate('/dashboard/admin-central');
         } else if (userData.roles.includes('ROLE_ADMIN_EPS')) {
@@ -40,12 +38,11 @@ function LoginForm() {
         } else if (userData.roles.includes('ROLE_USUARIO_EPS')) {
           navigate('/dashboard/usuario-eps');
         } else {
-          // Si no tiene un rol específico para redirigir, va a una página por defecto o de no autorizado
           navigate('/unauthorized');
         }
 
       } else {
-        const errorData = await response.text(); // O response.json() si devuelve un objeto de error
+        const errorData = await response.text();
         setMessage(`Error al iniciar sesión: ${errorData || response.statusText}`);
         setIsError(true);
       }

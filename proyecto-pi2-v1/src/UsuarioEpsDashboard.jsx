@@ -1,9 +1,8 @@
-// src/UsuarioEpsDashboard.jsx
 import React, { useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import { useNavigate } from 'react-router-dom';
 import EpsDetail from './EpsDetail';
-import axios from 'axios'; // Asegúrate de que axios esté importado
+import axios from 'axios';
 
 function UsuarioEpsDashboard() {
   const { user, logout } = useAuth();
@@ -16,10 +15,7 @@ function UsuarioEpsDashboard() {
     const fetchEpsDetails = async () => {
       if (user && typeof user.idEps === 'number' && user.idEps > 0) {
         try {
-          // --- CAMBIO AQUÍ: Usar axios.get en lugar de fetch ---
           const response = await axios.get(`http://localhost:8080/api/eps/my-eps?id=${user.idEps}`);
-          // Ya no necesitas 'credentials: 'include''
-          // --- FIN CAMBIO ---
 
           setEpsDetails(response.data);
         } catch (err) {

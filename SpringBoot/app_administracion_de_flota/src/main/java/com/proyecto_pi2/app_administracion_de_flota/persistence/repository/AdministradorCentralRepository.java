@@ -7,6 +7,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface AdministradorCentralRepository extends ListCrudRepository<AdministradorCentralEntity, Integer> {
     AdministradorCentralEntity findByCorreo(String correo);
-    // NUEVO: Método para buscar por DNI
     AdministradorCentralEntity findByDni(String dni);
 }

@@ -1,51 +1,46 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './AuthContext'; // Importa el AuthProvider y useAuth
-import LoginForm from './LoginForm'; // Tu componente de login
-import HomePage from './HomePage'; // Una página de inicio o dashboard general
-import AdminCentralDashboard from './AdminCentralDashboard'; // Vista para Admin Central
-import AdminEpsDashboard from './AdminEpsDashboard'; // Vista para Admin EPS
-import UsuarioEpsDashboard from './UsuarioEpsDashboard'; // Vista para Usuario EPS
-import UnauthorizedPage from './UnauthorizedPage'; // Página para acceso denegado
+import { AuthProvider, useAuth } from './AuthContext';
+import LoginForm from './LoginForm';
+import HomePage from './HomePage';
+import AdminCentralDashboard from './AdminCentralDashboard';
+import AdminEpsDashboard from './AdminEpsDashboard';
+import UsuarioEpsDashboard from './UsuarioEpsDashboard';
+import UnauthorizedPage from './UnauthorizedPage';
 
 import './App.css';
 
-// Componente para proteger rutas por rol
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { isAuthenticated, hasRole, loading } = useAuth();
 
   if (loading) {
-    return <div>Cargando autenticación...</div>; // O un spinner
+    return <div>Cargando autenticación...</div>;
   }
 
   if (!isAuthenticated()) {
-    // Si no está autenticado, redirigir al login
     return <Navigate to="/login" replace />;
   }
 
   if (allowedRoles && allowedRoles.length > 0) {
     const userHasRequiredRole = allowedRoles.some(role => hasRole(role));
     if (!userHasRequiredRole) {
-      // Si está autenticado pero no tiene el rol, redirigir a una página de no autorizado
       return <Navigate to="/unauthorized" replace />;
     }
   }
 
-  return children; // Si está autenticado y tiene el rol, renderiza el componente
+  return children;
 };
 
 function App() {
   return (
-    <AuthProvider> {/* Envuelve toda la aplicación con el proveedor de autenticación */}
+    <AuthProvider>
       <Router>
         <Routes>
           <Route path="/login" element={<LoginForm />} />
           <Route path="/unauthorized" element={<UnauthorizedPage />} />
 
-          {/* Rutas públicas o accesibles después del login (ej. una página de bienvenida) */}
-          <Route path="/" element={<HomePage />} /> {/* O puedes redirigir a un dashboard por defecto */}
+          <Route path="/" element={<HomePage />} />
 
-          {/* Rutas protegidas por rol */}
           <Route
             path="/dashboard/admin-central"
             element={
@@ -71,7 +66,6 @@ function App() {
             }
           />
 
-          {/* Redirigir a una ruta por defecto si el usuario está autenticado pero no tiene una ruta específica */}
           <Route path="*" element={<DefaultRedirect />} />
 
         </Routes>
@@ -80,7 +74,6 @@ function App() {
   );
 }
 
-// Componente para redirigir a un dashboard predeterminado según el rol si ya está logeado.
 const DefaultRedirect = () => {
   const { user, isAuthenticated, hasRole, loading } = useAuth();
 
@@ -98,11 +91,9 @@ const DefaultRedirect = () => {
     if (hasRole('USUARIO_EPS')) {
       return <Navigate to="/dashboard/usuario-eps" replace />;
     }
-    // Si está autenticado pero no tiene un rol reconocido para un dashboard específico
     return <Navigate to="/unauthorized" replace />;
   }
 
-  // Si no está autenticado, redirigir al login
   return <Navigate to="/login" replace />;
 };
 

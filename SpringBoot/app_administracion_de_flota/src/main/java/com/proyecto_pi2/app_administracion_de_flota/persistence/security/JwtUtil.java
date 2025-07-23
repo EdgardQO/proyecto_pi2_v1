@@ -17,15 +17,11 @@ import java.util.function.Function;
 
 @Component
 public class JwtUtil {
-
-    // Se recomienda usar una clave más robusta y gestionarla de forma segura (ej. variables de entorno)
-    // Para desarrollo, puedes generar una con: Base64.getEncoder().encodeToString(Keys.secretKeyFor(SignatureAlgorithm.HS256).getEncoded())
-    @Value("${jwt.secret.key}") // Se inyectará desde application.properties
+    @Value("${jwt.secret.key}")
     private String SECRET_KEY;
 
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
-        // Puedes añadir roles u otra información útil a los claims
         claims.put("roles", userDetails.getAuthorities().stream()
                 .map(grantedAuthority -> grantedAuthority.getAuthority())
                 .collect(java.util.stream.Collectors.toList()));
@@ -38,7 +34,7 @@ public class JwtUtil {
                 .setClaims(claims)
                 .setSubject(subject)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 horas de validez
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))
                 .signWith(getSignKey(), SignatureAlgorithm.HS256)
                 .compact();
     }

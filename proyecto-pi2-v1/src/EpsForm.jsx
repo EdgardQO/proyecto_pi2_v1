@@ -7,11 +7,7 @@ function EpsForm({ eps, onSubmit, onCancel, message, isError }) {
     ruc: eps?.ruc || '',
     direccion: eps?.direccion || '',
     telefono: eps?.telefono || '',
-    // --- CAMBIO CLAVE AQUÍ: Asegurar formato ISO completo para LocalDateTime ---
-    fechaRegistro: eps?.fechaRegistro ? new Date(eps.fechaRegistro).toISOString().slice(0, 19) : new Date().toISOString().slice(0, 19), // YYYY-MM-DDTHH:MM:SS
-    // Si prefieres solo fecha, podrías usar .toISOString().split('T')[0] y cambiar el tipo en backend a LocalDate.
-    // Pero si quieres LocalDateTime, esto es lo compatible.
-    // --- FIN CAMBIO CLAVE ---
+    fechaRegistro: eps?.fechaRegistro ? new Date(eps.fechaRegistro).toISOString().slice(0, 16) : new Date().toISOString().slice(0, 16),
     estado: eps?.estado || 'ACTIVO',
   });
 
@@ -22,7 +18,7 @@ function EpsForm({ eps, onSubmit, onCancel, message, isError }) {
       ruc: eps?.ruc || '',
       direccion: eps?.direccion || '',
       telefono: eps?.telefono || '',
-      fechaRegistro: eps?.fechaRegistro ? new Date(eps.fechaRegistro).toISOString().slice(0, 19) : new Date().toISOString().slice(0, 19),
+      fechaRegistro: eps?.fechaRegistro ? new Date(eps.fechaRegistro).toISOString().slice(0, 16) : new Date().toISOString().slice(0, 16),
       estado: eps?.estado || 'ACTIVO',
     });
   }, [eps]);
@@ -42,50 +38,57 @@ function EpsForm({ eps, onSubmit, onCancel, message, isError }) {
   };
 
   return (
-    <div style={{ border: '1px solid #ccc', padding: '20px', margin: '20px 0', borderRadius: '8px', textAlign: 'left' }}>
+    <div className="modal-form-content">
       <h3>{eps ? 'Editar EPS' : 'Agregar Nueva EPS'}</h3>
       <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: '10px' }}>
-          <label style={{ display: 'block', marginBottom: '5px' }}>Nombre EPS:</label>
-          <input type="text" name="nombreEps" value={formData.nombreEps} onChange={handleChange} required style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }} />
-        </div>
-        <div style={{ marginBottom: '10px' }}>
-          <label style={{ display: 'block', marginBottom: '5px' }}>RUC:</label>
-          <input type="text" name="ruc" value={formData.ruc} onChange={handleChange} required maxLength="11" style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }} />
-        </div>
-        <div style={{ marginBottom: '10px' }}>
-          <label style={{ display: 'block', marginBottom: '5px' }}>Dirección (Opcional):</label>
-          <input type="text" name="direccion" value={formData.direccion} onChange={handleChange} style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }} />
-        </div>
-        <div style={{ marginBottom: '10px' }}>
-          <label style={{ display: 'block', marginBottom: '5px' }}>Teléfono (Opcional):</label>
-          <input type="text" name="telefono" value={formData.telefono} onChange={handleChange} maxLength="9" style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }} />
-        </div>
-        <div style={{ marginBottom: '10px' }}>
-          <label style={{ display: 'block', marginBottom: '5px' }}>Fecha de Registro:</label>
-          {/* CAMBIO: El input type="date" solo maneja YYYY-MM-DD. Para LocalDateTime, es mejor usar type="datetime-local" o enviar solo la fecha si el backend realmente usa LocalDate */}
-          {/* Por ahora, mantendremos type="date" y ajustaremos el valor enviado para que sea ISO sin milisegundos. */}
-          {/* Si quieres que el usuario introduzca también la hora, cambia type="date" a type="datetime-local" */}
-          <input type="date" name="fechaRegistro" value={formData.fechaRegistro.split('T')[0]} onChange={handleChange} required style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }} />
-        </div>
-        <div style={{ marginBottom: '10px' }}>
-          <label style={{ display: 'block', marginBottom: '5px' }}>Estado:</label>
-          <select name="estado" value={formData.estado} onChange={handleChange} required style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}>
-            <option value="ACTIVO">ACTIVO</option>
-            <option value="INACTIVO">INACTIVO</option>
-          </select>
+        <div className="form-grid">
+          <div className="form-group full-width">
+            <label>Nombre EPS:</label>
+            <input type="text" name="nombreEps" value={formData.nombreEps} onChange={handleChange} required />
+          </div>
+          <div className="form-group">
+            <label>RUC:</label>
+            <input type="text" name="ruc" value={formData.ruc} onChange={handleChange} required maxLength="11" />
+          </div>
+          <div className="form-group">
+            <label>Teléfono (Opcional):</label>
+            <input type="text" name="telefono" value={formData.telefono} onChange={handleChange} maxLength="9" />
+          </div>
+          <div className="form-group full-width">
+            <label>Dirección (Opcional):</label>
+            <input type="text" name="direccion" value={formData.direccion} onChange={handleChange} />
+          </div>
+          <div className="form-group">
+            <label>Fecha de Registro:</label>
+            <input
+              type="datetime-local"
+              name="fechaRegistro"
+              value={formData.fechaRegistro}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label>Estado:</label>
+            <select name="estado" value={formData.estado} onChange={handleChange} required>
+              <option value="ACTIVO">ACTIVO</option>
+              <option value="INACTIVO">INACTIVO</option>
+            </select>
+          </div>
         </div>
 
         {message && (
-          <p style={{ color: isError ? 'red' : 'green', marginBottom: '10px' }}>
+          <p className={isError ? 'message-error' : 'message-success'}>
             {message}
           </p>
         )}
 
-        <button type="submit" style={{ marginRight: '10px' }}>
-          {eps ? 'Guardar Cambios' : 'Añadir EPS'}
-        </button>
-        <button type="button" onClick={onCancel}>Cancelar</button>
+        <div className="form-buttons">
+          <button type="submit" className="primary-button">
+            {eps ? 'Guardar Cambios' : 'Añadir EPS'}
+          </button>
+          <button type="button" onClick={onCancel} className="cancel-button">Cancelar</button>
+        </div>
       </form>
     </div>
   );

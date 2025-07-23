@@ -1,7 +1,6 @@
-// src/EpsUserDashboard.jsx
 import React, { useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
-import { useNavigate, useParams } from 'react-router-dom'; // Importa useParams
+import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 
 function EpsUserDashboard() {
@@ -22,15 +21,14 @@ function EpsUserDashboard() {
       try {
         setLoading(true);
         setError(null);
-        const dni = user.username; // El DNI del USUARIO_EPS se utiliza como username
+        const dni = user.username;
 
         const response = await axios.get(`http://localhost:8080/api/usuarios-eps/dni/${dni}`);
         const fetchedUserData = response.data;
 
-        // Validación adicional: Asegurarse de que el id_eps de la URL coincida con el del usuario
         if (fetchedUserData && fetchedUserData.eps && String(fetchedUserData.eps.id) !== id_eps) {
           setError('El ID de la EPS en la URL no coincide con la EPS asignada a este usuario.');
-          navigate('/unauthorized'); // O redirigir a la URL correcta del usuario
+          navigate('/unauthorized');
           return;
         }
 
@@ -45,7 +43,7 @@ function EpsUserDashboard() {
     };
 
     fetchUserData();
-  }, [user, isAuthenticated, navigate, id_eps]); // Añade id_eps como dependencia
+  }, [user, isAuthenticated, navigate, id_eps]);
 
   const handleLogout = () => {
     logout();
@@ -94,7 +92,7 @@ function EpsUserDashboard() {
 
       {eps && (
         <section>
-          <h2>Datos de la EPS a la que perteneces (ID: {eps.id})</h2> {/* Muestra el ID de la EPS */}
+          <h2>Datos de la EPS a la que perteneces (ID: {eps.id})</h2>
           <p><strong>Nombre de EPS:</strong> {eps.nombreEps}</p>
           <p><strong>RUC:</strong> {eps.ruc}</p>
           <p><strong>Dirección:</strong> {eps.direccion}</p>

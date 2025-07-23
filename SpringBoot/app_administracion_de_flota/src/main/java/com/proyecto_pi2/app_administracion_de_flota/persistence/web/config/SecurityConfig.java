@@ -13,16 +13,16 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter; // Importa este
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfigurationSource;
 
 @Configuration
-@EnableWebSecurity // Ya debería estar presente
-@EnableMethodSecurity(securedEnabled = true) // Habilita @Secured para seguridad a nivel de método
+@EnableWebSecurity
+@EnableMethodSecurity(securedEnabled = true)
 public class SecurityConfig {
 
     private final CorsConfigurationSource corsConfigurationSource;
-    private final JwtRequestFilter jwtRequestFilter; // Inyecta tu filtro JWT
+    private final JwtRequestFilter jwtRequestFilter;
 
     @Autowired
     public SecurityConfig(CorsConfigurationSource corsConfigurationSource, JwtRequestFilter jwtRequestFilter) {
@@ -36,16 +36,12 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/auth/login").permitAll() // Permitir login sin autenticación
-                        // Todas las demás rutas requieren autenticación (gestionada por JWT)
+                        .requestMatchers("/api/auth/login").permitAll()
                         .anyRequest().authenticated()
                 )
-                // Deshabilitar Basic Authentication
                 .httpBasic(AbstractHttpConfigurer::disable)
-                // Configurar manejo de sesión como STATELESS
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
-        // Añadir el filtro JWT antes del filtro de autenticación de usuario y contraseña
         http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
