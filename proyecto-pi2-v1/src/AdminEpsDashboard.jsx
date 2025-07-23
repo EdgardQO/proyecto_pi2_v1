@@ -1,9 +1,8 @@
-// src/AdminEpsDashboard.jsx
 import React, { useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import { useNavigate } from 'react-router-dom';
-import EpsDetail from './EpsDetail'; // Importa el componente EpsDetail
-import axios from 'axios'; // Importa axios para facilitar las llamadas HTTP
+import EpsDetail from './EpsDetail';
+import axios from 'axios'; // Asegúrate de que axios esté importado
 
 function AdminEpsDashboard() {
   const { user, logout } = useAuth();
@@ -15,34 +14,30 @@ function AdminEpsDashboard() {
   const [loadingUsuarios, setLoadingUsuarios] = useState(false);
   const [errorUsuarios, setErrorUsuarios] = useState(null);
 
-  // Estados para el formulario de usuario (mostrar/ocultar y datos del usuario a editar)
   const [showUserForm, setShowUserForm] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null); // Usuario a editar (null para añadir)
+  const [currentUser, setCurrentUser] = useState(null);
   const [formMessage, setFormMessage] = useState('');
   const [formError, setFormError] = useState(false);
-  const [rolesEps, setRolesEps] = useState([]); // Para el select de roles EPS
-  const [rolesSistema, setRolesSistema] = useState([]); // Para el select de roles de sistema
-  const [usuarioEpsRoleId, setUsuarioEpsRoleId] = useState(null); // Nuevo estado para almacenar el ID de USUARIO_EPS
-  const [loadingRoles, setLoadingRoles] = useState(true); // Nuevo estado para el loading de roles
+  const [rolesEps, setRolesEps] = useState([]);
+  const [rolesSistema, setRolesSistema] = useState([]);
+  const [usuarioEpsRoleId, setUsuarioEpsRoleId] = useState(null);
+  const [loadingRoles, setLoadingRoles] = useState(true);
 
   // Efecto para cargar los detalles de la EPS al inicio
   useEffect(() => {
     const fetchEpsDetails = async () => {
       if (user && typeof user.idEps === 'number' && user.idEps > 0) {
         try {
-          const response = await fetch(`http://localhost:8080/api/eps/my-eps?id=${user.idEps}`, {
-            credentials: 'include'
-          });
-          if (response.ok) {
-            const data = await response.json();
-            setEpsDetails(data);
-          } else {
-            const errorText = await response.text();
-            setError(`Error al cargar los detalles de la EPS: ${errorText}`);
-          }
+          // --- CAMBIO AQUÍ: Usar axios.get en lugar de fetch ---
+          const response = await axios.get(`http://localhost:8080/api/eps/my-eps?id=${user.idEps}`);
+          // Ya no necesitas 'credentials: include' con axios y el interceptor JWT
+          // --- FIN CAMBIO ---
+
+          setEpsDetails(response.data);
+          setError(null); // Limpia cualquier error previo si la carga es exitosa
         } catch (err) {
-          console.error("Error de red o al cargar EPS:", err);
-          setError("No se pudo conectar al servidor para obtener los detalles de la EPS.");
+          console.error("Error al cargar los detalles de la EPS:", err);
+          setError("No se pudo conectar al servidor para obtener los detalles de la EPS. Asegúrate de que el backend está corriendo y el token es válido.");
         } finally {
           setLoadingEps(false);
         }
@@ -53,17 +48,18 @@ function AdminEpsDashboard() {
     };
 
     fetchEpsDetails();
-    fetchRoles(); // Cargar roles al montar el componente
-    fetchUsuariosEps(); // Cargar usuarios al montar el componente para que la tabla se muestre inicialmente
+    fetchRoles();
+    fetchUsuariosEps();
   }, [user]);
 
-  // Función para cargar los usuarios de la EPS
+  // ... (el resto del código de AdminEpsDashboard.jsx permanece igual) ...
+
   const fetchUsuariosEps = async () => {
     if (user && typeof user.idEps === 'number' && user.idEps > 0) {
       setLoadingUsuarios(true);
       setErrorUsuarios(null);
       try {
-        const response = await axios.get(`http://localhost:8080/api/usuarios-eps/by-eps/${user.idEps}`, { withCredentials: true });
+        const response = await axios.get(`http://localhost:8080/api/usuarios-eps/by-eps/${user.idEps}`); // Esto ya usaba axios
         setUsuariosEps(response.data);
       } catch (err) {
         console.error("Error al cargar usuarios de EPS:", err);
@@ -76,16 +72,14 @@ function AdminEpsDashboard() {
     }
   };
 
-  // Función para cargar los roles desde el backend
   const fetchRoles = async () => {
-    setLoadingRoles(true); // Inicia el loading de roles
+    setLoadingRoles(true);
     try {
-      const rolesEpsResponse = await axios.get('http://localhost:8080/api/roles-eps', { withCredentials: true });
+      const rolesEpsResponse = await axios.get('http://localhost:8080/api/roles-eps'); // Esto ya usaba axios
       setRolesEps(rolesEpsResponse.data);
-      const rolesSistemaResponse = await axios.get('http://localhost:8080/api/roles-sistema', { withCredentials: true });
+      const rolesSistemaResponse = await axios.get('http://localhost:8080/api/roles-sistema'); // Esto ya usaba axios
       setRolesSistema(rolesSistemaResponse.data);
 
-      // Buscar 'USUARIO_EPS' en lugar de 'ROLE_USUARIO_EPS'
       const usuarioRol = rolesSistemaResponse.data.find(rol => rol.nombreRol === 'USUARIO_EPS');
       if (usuarioRol) {
         setUsuarioEpsRoleId(usuarioRol.idRolSistema);
@@ -93,16 +87,15 @@ function AdminEpsDashboard() {
         console.warn("Rol 'USUARIO_EPS' no encontrado en el sistema. Asegúrate de que existe en tu base de datos y backend.");
         setFormMessage("Advertencia: El rol 'USUARIO_EPS' no está disponible en el backend. Los nuevos usuarios no se podrán guardar correctamente.");
         setFormError(true);
-        setUsuarioEpsRoleId(null); // Asegura que sea null si no se encuentra
+        setUsuarioEpsRoleId(null);
       }
-
     } catch (error) {
       console.error("Error al cargar roles:", error);
-      setFormMessage("Error al cargar roles para el formulario.");
+      setFormMessage("Error al cargar roles del sistema o EPS para el formulario.");
       setFormError(true);
-      setUsuarioEpsRoleId(null); // Asegura que sea null en caso de error
+      setUsuarioEpsRoleId(null);
     } finally {
-      setLoadingRoles(false); // Finaliza el loading de roles
+      setLoadingRoles(false);
     }
   };
 
@@ -111,15 +104,13 @@ function AdminEpsDashboard() {
     navigate('/login');
   };
 
-  // Abre el formulario en modo "añadir"
   const handleAddUserClick = () => {
-    setCurrentUser(null); // Resetear el usuario actual para el modo "añadir"
+    setCurrentUser(null);
     setShowUserForm(true);
     setFormMessage('');
     setFormError(false);
   };
 
-  // Abre el formulario en modo "editar" con los datos del usuario
   const handleEditUserClick = (userToEdit) => {
     setCurrentUser(userToEdit);
     setShowUserForm(true);
@@ -127,14 +118,13 @@ function AdminEpsDashboard() {
     setFormError(false);
   };
 
-  // Maneja la eliminación de un usuario
   const handleDeleteUser = async (idUsuarioPorEps) => {
     if (window.confirm('¿Estás seguro de que quieres eliminar este usuario?')) {
       try {
-        await axios.delete(`http://localhost:8080/api/usuarios-eps/${idUsuarioPorEps}`, { withCredentials: true });
+        await axios.delete(`http://localhost:8080/api/usuarios-eps/${idUsuarioPorEps}`); // Esto ya usaba axios
         setFormMessage('Usuario eliminado exitosamente.');
         setFormError(false);
-        fetchUsuariosEps(); // Recargar la lista de usuarios
+        fetchUsuariosEps();
       } catch (error) {
         console.error('Error al eliminar usuario:', error);
         setFormMessage(`Error al eliminar usuario: ${error.response?.data || error.message}`);
@@ -143,26 +133,22 @@ function AdminEpsDashboard() {
     }
   };
 
-  // Maneja el envío del formulario (añadir o editar)
   const handleFormSubmit = async (formData) => {
     setFormMessage('');
     setFormError(false);
     try {
       if (currentUser) {
-        // Actualizar usuario existente
-        await axios.put('http://8080/api/usuarios-eps', formData, { withCredentials: true });
+        await axios.put('http://localhost:8080/api/usuarios-eps', formData); // Esto ya usaba axios
         setFormMessage('Usuario actualizado exitosamente.');
       } else {
-        // Añadir nuevo usuario
-        await axios.post('http://8080/api/usuarios-eps', formData, { withCredentials: true });
+        await axios.post('http://localhost:8080/api/usuarios-eps', formData); // Esto ya usaba axios
         setFormMessage('Usuario añadido exitosamente.');
       }
       setFormError(false);
-      setShowUserForm(false); // Cerrar el formulario
-      fetchUsuariosEps(); // Recargar la lista de usuarios
+      setShowUserForm(false);
+      fetchUsuariosEps();
     } catch (error) {
       console.error('Error al guardar usuario:', error);
-      // Intenta mostrar un mensaje de error más específico del backend
       let errorMessage = 'Error desconocido al guardar usuario.';
       if (axios.isAxiosError(error) && error.response) {
         if (typeof error.response.data === 'object' && error.response.data !== null) {
@@ -193,7 +179,7 @@ function AdminEpsDashboard() {
     <div>
       <h1>Panel de Administrador EPS ✅</h1>
       <p>Bienvenido, {user.fullName || user.username}. Tienes los roles: {user.roles.join(', ')}.</p>
-      
+
       <h3>Gestión de su EPS</h3>
       {loadingEps ? (
         <p>Cargando detalles de la EPS...</p>
@@ -203,12 +189,10 @@ function AdminEpsDashboard() {
         <EpsDetail eps={epsDetails} />
       )}
 
-      {/* Contenedor de botones "Ver Usuarios" y "Agregar Nuevo Usuario" */}
       <div style={{ marginTop: '20px', marginBottom: '20px' }}>
         <button onClick={fetchUsuariosEps} style={{ marginRight: '10px' }}>
           Ver Usuarios de mi EPS
         </button>
-        {/* El botón "Agregar Nuevo Usuario" estará deshabilitado hasta que el rol de sistema se cargue */}
         <button onClick={handleAddUserClick} disabled={loadingRoles || usuarioEpsRoleId === null}>
           Agregar Nuevo Usuario
         </button>
@@ -218,14 +202,14 @@ function AdminEpsDashboard() {
         )}
       </div>
 
-      {showUserForm && usuarioEpsRoleId !== null && ( // Renderiza UserForm solo si usuarioEpsRoleId está disponible
+      {showUserForm && usuarioEpsRoleId !== null && (
         <UserForm
           user={currentUser}
-          idEps={user.idEps} // Pasa el idEps del administrador logueado
+          idEps={user.idEps}
           onSubmit={handleFormSubmit}
           onCancel={() => setShowUserForm(false)}
           rolesEps={rolesEps}
-          usuarioEpsRoleId={usuarioEpsRoleId} // Pasa el ID del rol USUARIO_EPS directamente
+          usuarioEpsRoleId={usuarioEpsRoleId}
           message={formMessage}
           isError={formError}
         />

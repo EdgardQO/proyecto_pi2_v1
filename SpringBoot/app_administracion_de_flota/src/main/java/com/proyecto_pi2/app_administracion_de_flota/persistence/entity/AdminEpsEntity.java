@@ -1,5 +1,6 @@
 package com.proyecto_pi2.app_administracion_de_flota.persistence.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty; // ¡Asegúrate de importar esta anotación!
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,8 +18,11 @@ public class AdminEpsEntity {
     @Column(name = "id_admin_eps", nullable = false)
     private Integer idAdminEps;
 
+    // --- CAMBIO CLAVE AQUÍ ---
+    @JsonProperty("id_eps") // Indica a Jackson que mapee el campo 'id_eps' del JSON a esta propiedad.
     @Column(name = "id_eps", nullable = false)
     private Integer idEps;
+    // --- FIN CAMBIO ---
 
     @Column(nullable = false, length = 8, unique = true)
     private String dni;

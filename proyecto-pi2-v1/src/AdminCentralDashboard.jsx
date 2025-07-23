@@ -32,19 +32,19 @@ function AdminCentralDashboard() {
     fetchRolesAndEpsOptions();
   }, []);
 
-  const fetchAdminEps = async () => {
+const fetchAdminEps = async () => {
     setLoadingAdminEps(true);
     setErrorAdminEps(null);
     try {
-      const response = await axios.get('http://localhost:8080/api/admin-eps', { withCredentials: true });
-      setAdminEpsList(response.data);
+        const response = await axios.get('http://localhost:8080/api/admin-eps'); // No necesitas withCredentials aquí
+        setAdminEpsList(response.data);
     } catch (err) {
-      console.error("Error al cargar administradores de EPS:", err);
-      setErrorAdminEps("No se pudieron cargar los administradores de EPS.");
+        console.error("Error al cargar administradores de EPS:", err);
+        setErrorAdminEps("No se pudieron cargar los administradores de EPS.");
     } finally {
-      setLoadingAdminEps(false);
+        setLoadingAdminEps(false);
     }
-  };
+};
 
   const fetchRolesAndEpsOptions = async () => {
     setLoadingRoles(true);

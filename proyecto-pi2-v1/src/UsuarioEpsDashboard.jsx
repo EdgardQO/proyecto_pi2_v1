@@ -1,7 +1,9 @@
+// src/UsuarioEpsDashboard.jsx
 import React, { useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import { useNavigate } from 'react-router-dom';
-import EpsDetail from './EpsDetail'; // Importa el nuevo componente y corrige la ruta
+import EpsDetail from './EpsDetail';
+import axios from 'axios'; // Asegúrate de que axios esté importado
 
 function UsuarioEpsDashboard() {
   const { user, logout } = useAuth();
@@ -12,24 +14,17 @@ function UsuarioEpsDashboard() {
 
   useEffect(() => {
     const fetchEpsDetails = async () => {
-      // Asegúrate de que user existe y user.idEps tiene un valor numérico válido
       if (user && typeof user.idEps === 'number' && user.idEps > 0) {
         try {
-          // Asumiendo que /api/eps/my-eps es el endpoint para obtener los detalles de la EPS del usuario
-          const response = await fetch(`http://localhost:8080/api/eps/my-eps?id=${user.idEps}`, {
-            credentials: 'include' // ✅ CAMBIO CRÍTICO: Indica al navegador que incluya cookies/credenciales
-            // Ya no necesitas el header de Authorization: Bearer para HTTP Basic con sesiones
-          });
-          if (response.ok) {
-            const data = await response.json();
-            setEpsDetails(data);
-          } else {
-            const errorText = await response.text();
-            setError(`Error al cargar los detalles de la EPS: ${errorText}`);
-          }
+          // --- CAMBIO AQUÍ: Usar axios.get en lugar de fetch ---
+          const response = await axios.get(`http://localhost:8080/api/eps/my-eps?id=${user.idEps}`);
+          // Ya no necesitas 'credentials: 'include''
+          // --- FIN CAMBIO ---
+
+          setEpsDetails(response.data);
         } catch (err) {
           console.error("Error de red o al cargar EPS:", err);
-          setError("No se pudo conectar al servidor para obtener los detalles de la EPS.");
+          setError("No se pudo conectar al servidor para obtener los detalles de la EPS. Asegúrate de que el backend está corriendo y el token JWT es válido.");
         } finally {
           setLoadingEps(false);
         }
@@ -40,7 +35,7 @@ function UsuarioEpsDashboard() {
     };
 
     fetchEpsDetails();
-  }, [user]); // Vuelve a cargar si el objeto de usuario cambia
+  }, [user]);
 
   const handleLogout = () => {
     logout();
@@ -55,7 +50,7 @@ function UsuarioEpsDashboard() {
     <div>
       <h1>Panel de Usuario EPS</h1>
       <p>Bienvenido, {user.fullName || user.username}. Tienes los roles: {user.roles.join(', ')}.</p>
-      
+
       <h3>Mi Empresa EPS</h3>
       {loadingEps ? (
         <p>Cargando detalles de la EPS...</p>

@@ -1,5 +1,5 @@
 package com.proyecto_pi2.app_administracion_de_flota.persistence.web.config;
-
+import com.proyecto_pi2.app_administracion_de_flota.persistence.security.JwtRequestFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,21 +13,22 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter; // Importa este
 import org.springframework.web.cors.CorsConfigurationSource;
 
-import java.util.Arrays;
-import java.util.List;
 @Configuration
+@EnableWebSecurity // Ya debería estar presente
 @EnableMethodSecurity(securedEnabled = true) // Habilita @Secured para seguridad a nivel de método
 public class SecurityConfig {
 
     private final CorsConfigurationSource corsConfigurationSource;
+    private final JwtRequestFilter jwtRequestFilter; // Inyecta tu filtro JWT
 
     @Autowired
-    public SecurityConfig(CorsConfigurationSource corsConfigurationSource) {
+    public SecurityConfig(CorsConfigurationSource corsConfigurationSource, JwtRequestFilter jwtRequestFilter) {
         this.corsConfigurationSource = corsConfigurationSource;
+        this.jwtRequestFilter = jwtRequestFilter;
     }
-
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -35,18 +36,17 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/auth/login").permitAll()
-                        .requestMatchers("/api/eps/my-eps").hasAnyRole("ADMIN_EPS", "USUARIO_EPS")
-                        // ✅ CAMBIO CRÍTICO: "ROLE_ADMIN_EPS" a "ADMIN_EPS"
-                        .requestMatchers("/api/usuarios-eps/by-eps/**").hasAnyRole("ADMIN_CENTRAL", "ADMIN_EPS","USUARIO_EPS")
-                        .requestMatchers("/api/admin-central/**").hasRole("ADMIN_CENTRAL")
-                        .requestMatchers("/api/admin-eps/**").hasAnyRole("ADMIN_CENTRAL", "ADMIN_EPS")
-                        .requestMatchers("/api/eps/**").hasRole("ADMIN_CENTRAL")
-                        .requestMatchers("/api/usuarios-eps/**").hasAnyRole("ADMIN_CENTRAL", "ADMIN_EPS", "USUARIO_EPS")
+                        .requestMatchers("/api/auth/login").permitAll() // Permitir login sin autenticación
+                        // Todas las demás rutas requieren autenticación (gestionada por JWT)
                         .anyRequest().authenticated()
                 )
-                .httpBasic(httpBasic -> {})
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED));
+                // Deshabilitar Basic Authentication
+                .httpBasic(AbstractHttpConfigurer::disable)
+                // Configurar manejo de sesión como STATELESS
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
+        // Añadir el filtro JWT antes del filtro de autenticación de usuario y contraseña
+        http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

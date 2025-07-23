@@ -30,6 +30,7 @@ public class AdminEpsController {
 
     @PostMapping
     public ResponseEntity<AdminEpsEntity> add(@RequestBody AdminEpsEntity adminEps) {
+        System.out.println("DEBUG (Controller - POST): adminEps.getIdEps() = " + adminEps.getIdEps() + ", adminEps.getEps().getIdEps() = " + (adminEps.getEps() != null ? adminEps.getEps().getIdEps() : "null (EpsEntity object is null)")); // <-- Añade esta línea
         if (adminEps.getIdAdminEps() == null || !this.adminEpsService.exists(adminEps.getIdAdminEps())) {
             return ResponseEntity.ok(this.adminEpsService.save(adminEps));
         }
@@ -38,6 +39,7 @@ public class AdminEpsController {
 
     @PutMapping
     public ResponseEntity<AdminEpsEntity> update(@RequestBody AdminEpsEntity adminEps) {
+        System.out.println("DEBUG (Controller - PUT): adminEps.getIdEps() = " + adminEps.getIdEps() + ", adminEps.getEps().getIdEps() = " + (adminEps.getEps() != null ? adminEps.getEps().getIdEps() : "null (EpsEntity object is null)")); // <-- Añade esta línea
         if (adminEps.getIdAdminEps() != null && this.adminEpsService.exists(adminEps.getIdAdminEps())) {
             return ResponseEntity.ok(this.adminEpsService.save(adminEps));
         }
