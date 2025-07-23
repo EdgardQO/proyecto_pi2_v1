@@ -1,15 +1,14 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
+import axios from 'axios';
 
 // Crea el contexto
 const AuthContext = createContext(null);
 
 // Proveedor del contexto de autenticación
 export const AuthProvider = ({ children }) => {
-  // Almacena el objeto de usuario (username, roles, fullName, idEps, etc.)
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true); // Para saber si ya se cargó el estado inicial
+  const [loading, setLoading] = useState(true);
 
-  // Carga el usuario desde localStorage al inicio
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
@@ -18,36 +17,43 @@ export const AuthProvider = ({ children }) => {
         setUser(parsedUser);
       } catch (error) {
         console.error("Error al parsear el usuario de localStorage:", error);
-        localStorage.removeItem('user'); // Limpiar si está corrupto
+        localStorage.removeItem('user');
       }
     }
     setLoading(false);
   }, []);
 
-  // Función para iniciar sesión
   const login = (userData) => {
     setUser(userData);
-    localStorage.setItem('user', JSON.stringify(userData)); // Guarda en localStorage
+    localStorage.setItem('user', JSON.stringify(userData));
   };
 
-  // Función para cerrar sesión
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('user'); // Elimina de localStorage
+  const logout = async (callback) => { // Acepta un callback para la navegación
+    try {
+      console.log("Frontend: Enviando solicitud de cierre de sesión al backend...");
+      await axios.post('http://localhost:8080/api/auth/logout', {}, { withCredentials: true });
+      console.log("Frontend: Solicitud de cierre de sesión al backend completada.");
+    } catch (error) {
+      console.error("Frontend: Error al cerrar sesión en el backend:", error);
+      // Opcional: mostrar un mensaje de error persistente al usuario.
+    } finally {
+      setUser(null);
+      localStorage.removeItem('user');
+      console.log("Frontend: Estado de usuario local y localStorage limpiados.");
+      if (callback) {
+        callback(); // Llama al callback (ej. navigate('/login')) después de la limpieza
+      }
+    }
   };
 
-  // Función para verificar si el usuario tiene un rol específico
   const hasRole = (requiredRole) => {
     if (!user || !user.roles) {
       return false;
     }
-    // Los roles de Spring Security suelen venir con "ROLE_" prefijo.
-    // Aseguramos que el rol buscado también lo tenga para la comparación.
     const formattedRequiredRole = requiredRole.startsWith('ROLE_') ? requiredRole : `ROLE_${requiredRole.toUpperCase()}`;
     return user.roles.includes(formattedRequiredRole);
   };
 
-  // Función para verificar si está autenticado
   const isAuthenticated = () => {
     return !!user;
   };
@@ -63,12 +69,11 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider value={contextValue}>
-      {!loading && children} {/* Renderiza los hijos solo después de cargar el estado */}
+      {!loading && children}
     </AuthContext.Provider>
   );
 };
 
-// Hook personalizado para usar el contexto de autenticación fácilmente
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {

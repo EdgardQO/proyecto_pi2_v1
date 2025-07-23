@@ -7,8 +7,10 @@ function HomePage() {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    logout();
-    navigate('/login');
+    // Pasa la función de navegación como un callback
+    logout(() => {
+      navigate('/login');
+    });
   };
 
   return (
@@ -18,7 +20,7 @@ function HomePage() {
         <div>
           {/* Se agrega una verificación para user.roles antes de intentar .join() */}
           <p>
-            Has iniciado sesión como: {user.fullName || user.username} 
+            Has iniciado sesión como: {user.fullName || user.username}
             {user.roles && user.roles.length > 0 ? (
               // Si user.roles existe y no está vacío, lo unimos.
               ` (Roles: ${user.roles.join(', ')})`
